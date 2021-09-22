@@ -7,8 +7,8 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 
+import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,7 +39,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive);
 
   //init gyro
-  private final AnalogGyro gyro = new AnalogGyro(0);
+  private final AHRS gyro = new AHRS(SPI.Port.kMXP);
 
   //init joysticks
   private final XboxController driveController = new XboxController(0);
