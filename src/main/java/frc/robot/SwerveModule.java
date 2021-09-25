@@ -10,7 +10,6 @@ public class SwerveModule {
     private CANSparkMax drive;
     private CANPIDController anglePID;
     private CANPIDController drivePID;
-    private final Gains defaultPID;
 
     private double[] loc;
     private double setVelocity;
@@ -26,9 +25,8 @@ public class SwerveModule {
         anglePID = angle.getPIDController();
         drivePID = drive.getPIDController();
 
-        defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
-        setPidControllers(drivePID, defaultPID, defaultPID.kSlot);
-        setPidControllers(anglePID, defaultPID, defaultPID.kSlot);
+        setPidControllers(drivePID, Constants.fastPID, Constants.fastPID.kSlot);
+        setPidControllers(anglePID, Constants.fastPID, Constants.fastPID.kSlot);
 
         //location
         this.loc = loc;
@@ -143,8 +141,8 @@ public class SwerveModule {
         this.setAngle = encoderPos-angleDiff;
 
         //Apply PID loop
-        drivePID.setReference(this.setVelocity, ControlType.kVelocity);
-        anglePID.setReference(this.setAngle, ControlType.kPosition);
+        drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
+        anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
     }
 
     //returns +1 or -1 based on num's sign

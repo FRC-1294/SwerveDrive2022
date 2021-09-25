@@ -17,18 +17,24 @@ package frc.robot;
  */
 public final class Constants {
     //SWERVE constants
-    public static final double maxSpeed = 10.0; // 10 meters per second
-    public static final double maxAngularSpeed = Math.PI/2; // 1/4 rotation per second
-
     public static final double swerveModuleXDistance = 0.381;
     public static final double swerveModuleYDistance = 0.381;
 
+    public static final double maxSpeed = 12.0;
+
+    //Encoders
     public static final double angleEncoderConversionFactor = 19.969;
     public static final double driveEncoderConversionFactor = 1;
+
+    //PID
+    public static final Gains defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
+    public static final Gains fastPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -1, 1, 1);
+    public static final int swervePIDSlot = fastPID.kSlot;
 
     //JOYSTICK constants
     public static final double deadzone = 0.05;
 
+    //SPARK ids
     public static final int frontLeftSteer = 1;
     public static final int frontLeftDrive = 2;
     
