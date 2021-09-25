@@ -53,7 +53,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-    //sets current speed of the robot
+    //calculates speed and angle of modules and sets states
     frontLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
     frontRightModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
     rearLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);

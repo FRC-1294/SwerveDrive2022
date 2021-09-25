@@ -63,26 +63,36 @@ public class SwerveModule {
 
     //calculate velocity and angle, then set state of module
     public void setModuleState(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+        //deadzone filtering
+        if (Math.abs(xSpeed) < Constants.deadzone) xSpeed = 0;
+        if (Math.abs(ySpeed) < Constants.deadzone) ySpeed = 0;
+        if (Math.abs(rot) < Constants.deadzone) rot = 0;
+
+        //normalize velocity to range of -1 to 1
+        double factor = Math.sqrt(Math.pow(Math.abs(xSpeed)+Math.abs(rot), 2) + Math.pow(Math.abs(ySpeed)+Math.abs(rot), 2));
+
+        if (factor > 1) {
+            factor = 1/factor;
+
+            xSpeed *= factor;
+            ySpeed *= factor;
+            rot *= factor;
+        }
+
+        //CALCULATE SUM OF VECTORS
         double totalXSpeed = 0;
         double totalYSpeed = 0;
+        //X&Y:
+        totalXSpeed += xSpeed;
+        totalYSpeed += ySpeed;
+        //ROT vectors:
+        //calculate angle through tanget, add or subtract 90 based on front/back loc and rotation direction
+        double rotAngle = Math.toDegrees(Math.atan(loc[0]/loc[1])) + 90*getSign(loc[1])*getSign(rot);
+        //calculate velocity magnitude through trig (RELATIVE TO Y-AXIS)
+        totalXSpeed += Math.sin(Math.toRadians(rotAngle)) * Math.abs(rot)*Math.sqrt(2);
+        totalYSpeed += Math.cos(Math.toRadians(rotAngle)) * Math.abs(rot)*Math.sqrt(2);
 
-        //sum of vectors
-        if (Math.abs(xSpeed) >= Constants.deadzone) {
-            totalXSpeed += xSpeed;
-        }
-        if (Math.abs(ySpeed) >= Constants.deadzone) {
-            totalYSpeed += ySpeed;
-        }
-        if (Math.abs(rot) >= Constants.deadzone) {
-            //calculate angle through tanget, add or subtract 90 based on front/back loc and rotation direction
-            double rotAngle = Math.toDegrees(Math.atan(loc[0]/loc[1])) + 90*getSign(loc[1])*getSign(rot);
-
-            //calculate velocity magnitude through trig (RELATIVE TO Y-AXIS), from -1 to 1
-            totalXSpeed += Math.sin(Math.toRadians(rotAngle)) * (Math.abs(rot)*Math.sqrt(2));
-            totalYSpeed += Math.cos(Math.toRadians(rotAngle)) * (Math.abs(rot)*Math.sqrt(2));
-        }
-
-        //calculate velocity and angle
+        //calculate FINAL velocity and angle
         this.setVelocity = Math.sqrt(Math.pow(totalXSpeed, 2) + Math.pow(totalYSpeed, 2)) * Constants.maxSpeed;
         this.setAngle = Math.toDegrees(Math.atan(totalXSpeed/totalYSpeed));
 
@@ -91,7 +101,7 @@ public class SwerveModule {
         //handle lower quadrants (> 90 degrees)
         if (totalYSpeed < 0) this.setAngle = (180-Math.abs(this.setAngle)) * getSign(totalXSpeed);
 
-        setDesiredState(setVelocity, setAngle);
+        applyState();
     }
 
     //returns +1 or -1 based on num's sign
@@ -103,12 +113,12 @@ public class SwerveModule {
     }
 
     //for setting the swerve module to the wanted state
-    public void setDesiredState(double velocity, double angle) {
+    public void applyState() {
         // Optimize the reference state to avoid spinning further than 90 degrees
         // SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(angle.getEncoder().getPosition()));
 
-        drivePID.setReference(velocity, ControlType.kVelocity);
-        anglePID.setReference(angle, ControlType.kPosition);
+        drivePID.setReference(this.setVelocity, ControlType.kVelocity);
+        anglePID.setReference(this.setAngle, ControlType.kPosition);
     }
 
     //initallizing pid controllers
