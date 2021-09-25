@@ -33,11 +33,11 @@ public class SwerveSubsystem extends SubsystemBase {
   private final XboxController driveController = new XboxController(0);
 
   //init network tables
-  private final NetworkTable networkTable = NetworkTableInstance.getDefault().getTable("dataTable");
-  private final NetworkTableEntry frontLeftStateEntry = networkTable.getEntry("frontLeftState");
-  private final NetworkTableEntry frontRightStateEntry = networkTable.getEntry("frontRightState");
-  private final NetworkTableEntry backLeftStateEntry = networkTable.getEntry("backLeftState");
-  private final NetworkTableEntry backRightStateEntry = networkTable.getEntry("backRightState");
+  private final NetworkTable swerveTable = NetworkTableInstance.getDefault().getTable("Swerve Data");
+  private final NetworkTableEntry frontLeftStateEntry = swerveTable.getEntry("frontLeftState");
+  private final NetworkTableEntry frontRightStateEntry = swerveTable.getEntry("frontRightState");
+  private final NetworkTableEntry backLeftStateEntry = swerveTable.getEntry("backLeftState");
+  private final NetworkTableEntry backRightStateEntry = swerveTable.getEntry("backRightState");
 
   public SwerveSubsystem() {
     gyro.reset();
@@ -45,6 +45,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    //gets joystick values
     double xSpeed = driveController.getX(Hand.kLeft);
     double ySpeed = -driveController.getY(Hand.kLeft);
     double rot = (driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
@@ -54,10 +55,10 @@ public class SwerveSubsystem extends SubsystemBase {
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     //calculates speed and angle of modules and sets states
-    frontLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
-    frontRightModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
-    rearLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
-    rearRightModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
+    frontLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
+    frontRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
+    rearLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
+    rearRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
 
     frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
     frontRightStateEntry.setDoubleArray(new double [] {frontRightModule.getSetVelocity(), frontRightModule.getSetAngle()});

@@ -22,7 +22,9 @@ public final class Constants {
 
     public static final double swerveModuleXDistance = 0.381;
     public static final double swerveModuleYDistance = 0.381;
+
     public static final double angleEncoderConversionFactor = 19.969;
+    public static final double driveEncoderConversionFactor = 1;
 
     //JOYSTICK constants
     public static final double deadzone = 0.05;
