@@ -38,6 +38,7 @@ public class SwerveModule {
         angle.getEncoder();
         angle.getEncoder().setPosition(0);
         angle.getEncoder().setPositionConversionFactor(Constants.angleEncoderConversionFactor);
+
         drive.getEncoder();
         drive.getEncoder().setPosition(0);
         drive.getEncoder().setPositionConversionFactor(Constants.driveEncoderConversionFactor);
@@ -45,8 +46,8 @@ public class SwerveModule {
         angle.setSmartCurrentLimit(60);
         drive.setSmartCurrentLimit(60);
 
-        angle.setOpenLoopRampRate(1);
-        drive.setOpenLoopRampRate(1);
+        angle.setOpenLoopRampRate(0.5);
+        drive.setOpenLoopRampRate(0.5);
     }
 
     public double getSetVelocity() {
@@ -65,9 +66,9 @@ public class SwerveModule {
         if (Math.abs(rot) < Constants.deadzone) rot = 0;
 
         //square inputs to allocate more joystick space for lower speed precision
-        xSpeed *= xSpeed;
-        ySpeed *= ySpeed;
-        rot *= rot;
+        xSpeed *= xSpeed * getSign(xSpeed);
+        ySpeed *= ySpeed * getSign(ySpeed);
+        rot *= rot * getSign(rot);
 
         //only change angle if at least one input is over deadzone
         if (xSpeed != 0 || ySpeed != 0 || rot != 0) {
