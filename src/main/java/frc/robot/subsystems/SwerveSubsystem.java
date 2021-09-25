@@ -25,18 +25,18 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {
-  //init swerve module calculation objects
-  private final Translation2d frontLeftLocation = new Translation2d(Constants.swerveModuleDistance, Constants.swerveModuleDistance);
-  private final Translation2d frontRightLocation = new Translation2d(Constants.swerveModuleDistance, -Constants.swerveModuleDistance);
-  private final Translation2d backLeftLocation = new Translation2d(-Constants.swerveModuleDistance, Constants.swerveModuleDistance);
-  private final Translation2d backRightLocation = new Translation2d(-Constants.swerveModuleDistance, -Constants.swerveModuleDistance);
+  //init swerve module calculation objects, these have X and Y swapped
+  private final Translation2d frontLeftLocation = new Translation2d(Constants.swerveModuleYDistance, -Constants.swerveModuleXDistance);
+  private final Translation2d frontRightLocation = new Translation2d(Constants.swerveModuleYDistance, Constants.swerveModuleXDistance);
+  private final Translation2d backLeftLocation = new Translation2d(-Constants.swerveModuleYDistance, -Constants.swerveModuleXDistance);
+  private final Translation2d backRightLocation = new Translation2d(-Constants.swerveModuleYDistance, Constants.swerveModuleXDistance);
   private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
   //init swerve drive objects
-  private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive);
-  private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive);
-  private final SwerveModule rearLeftModule = new SwerveModule(Constants.rearLeftSteer, Constants.rearLeftDrive);
-  private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive);
+  private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
+  private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
+  private final SwerveModule rearLeftModule = new SwerveModule(Constants.rearLeftSteer, Constants.rearLeftDrive, new double[] {-Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance});
+  private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance});
 
   //init gyro
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -57,28 +57,39 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double xSpeed = -driveController.getY(Hand.kLeft) * Constants.maxSpeed;
-    double ySpeed = driveController.getX(Hand.kLeft) * Constants.maxSpeed;
-    double rot = (driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight)) * Constants.maxAngularSpeed;
+    double xSpeed = driveController.getX(Hand.kLeft);
+    double ySpeed = -driveController.getY(Hand.kLeft);
+    double rot = (driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
 
     drive(xSpeed, ySpeed, rot, true);
   }
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-    //saves current speeds of robot
-    ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot * (180/Math.PI), Rotation2d.fromDegrees(gyro.getAngle()));
+    // //saves current speeds of robot
+    // ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed*Constants.maxSpeed, xSpeed*Constants.maxSpeed, rot * (180/Math.PI)*Constants.maxAngularSpeed, Rotation2d.fromDegrees(gyro.getYaw()));
     
-    //produces array of each individual serve module state
-    SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
+    // //produces array of each individual serve module state
+    // SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
 
-    frontLeftStateEntry.setDoubleArray(new double [] {moduleStates[0].speedMetersPerSecond, moduleStates[0].angle.getDegrees()});
-    frontRightStateEntry.setDoubleArray(new double [] {moduleStates[1].speedMetersPerSecond, moduleStates[1].angle.getDegrees()});
-    backLeftStateEntry.setDoubleArray(new double [] {moduleStates[2].speedMetersPerSecond, moduleStates[0].angle.getDegrees()});
-    backRightStateEntry.setDoubleArray(new double [] {moduleStates[3].speedMetersPerSecond, moduleStates[1].angle.getDegrees()});
+    // frontLeftStateEntry.setDoubleArray(new double [] {moduleStates[0].speedMetersPerSecond, moduleStates[0].angle.getDegrees()});
+    // frontRightStateEntry.setDoubleArray(new double [] {moduleStates[1].speedMetersPerSecond, moduleStates[1].angle.getDegrees()});
+    // backLeftStateEntry.setDoubleArray(new double [] {moduleStates[2].speedMetersPerSecond, moduleStates[2].angle.getDegrees()});
+    // backRightStateEntry.setDoubleArray(new double [] {moduleStates[3].speedMetersPerSecond, moduleStates[3].angle.getDegrees()});
+    
+    // frontLeftModule.setDesiredState(moduleStates[0]);
+    // frontRightModule.setDesiredState(moduleStates[1]);
+    // rearLeftModule.setDesiredState(moduleStates[2]);
+    // rearRightModule.setDesiredState(moduleStates[3]);
 
-    frontLeftModule.setDesiredState(moduleStates[0]);
-    frontRightModule.setDesiredState(moduleStates[1]);
-    rearLeftModule.setDesiredState(moduleStates[2]);
-    rearRightModule.setDesiredState(moduleStates[3]);
+    //sets current speed of the robot
+    frontLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
+    frontRightModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
+    rearLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
+    rearRightModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
+
+    frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
+    frontRightStateEntry.setDoubleArray(new double [] {frontRightModule.getSetVelocity(), frontRightModule.getSetAngle()});
+    backLeftStateEntry.setDoubleArray(new double [] {rearLeftModule.getSetVelocity(), rearLeftModule.getSetAngle()});
+    backRightStateEntry.setDoubleArray(new double [] {rearRightModule.getSetVelocity(), rearRightModule.getSetAngle()});
   }
 }
