@@ -11,11 +11,6 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.networktables.NetworkTable;
@@ -25,13 +20,6 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {
-  //init swerve module calculation objects, these have X and Y swapped
-  private final Translation2d frontLeftLocation = new Translation2d(Constants.swerveModuleYDistance, -Constants.swerveModuleXDistance);
-  private final Translation2d frontRightLocation = new Translation2d(Constants.swerveModuleYDistance, Constants.swerveModuleXDistance);
-  private final Translation2d backLeftLocation = new Translation2d(-Constants.swerveModuleYDistance, -Constants.swerveModuleXDistance);
-  private final Translation2d backRightLocation = new Translation2d(-Constants.swerveModuleYDistance, Constants.swerveModuleXDistance);
-  private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
-
   //init swerve drive objects
   private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
   private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
@@ -65,22 +53,6 @@ public class SwerveSubsystem extends SubsystemBase {
   }
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-    // //saves current speeds of robot
-    // ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed*Constants.maxSpeed, xSpeed*Constants.maxSpeed, rot * (180/Math.PI)*Constants.maxAngularSpeed, Rotation2d.fromDegrees(gyro.getYaw()));
-    
-    // //produces array of each individual serve module state
-    // SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
-
-    // frontLeftStateEntry.setDoubleArray(new double [] {moduleStates[0].speedMetersPerSecond, moduleStates[0].angle.getDegrees()});
-    // frontRightStateEntry.setDoubleArray(new double [] {moduleStates[1].speedMetersPerSecond, moduleStates[1].angle.getDegrees()});
-    // backLeftStateEntry.setDoubleArray(new double [] {moduleStates[2].speedMetersPerSecond, moduleStates[2].angle.getDegrees()});
-    // backRightStateEntry.setDoubleArray(new double [] {moduleStates[3].speedMetersPerSecond, moduleStates[3].angle.getDegrees()});
-    
-    // frontLeftModule.setDesiredState(moduleStates[0]);
-    // frontRightModule.setDesiredState(moduleStates[1]);
-    // rearLeftModule.setDesiredState(moduleStates[2]);
-    // rearRightModule.setDesiredState(moduleStates[3]);
-
     //sets current speed of the robot
     frontLeftModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);
     frontRightModule.setModuleState(xSpeed, ySpeed, rot, fieldRelative);

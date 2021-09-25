@@ -8,8 +8,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 
 public class SwerveModule {
     private CANSparkMax angle;
@@ -63,11 +61,6 @@ public class SwerveModule {
         return this.setAngle;
     }
 
-    //getting the current state of the module
-    public SwerveModuleState getState() {
-        return new SwerveModuleState(drive.getEncoder().getVelocity(), new Rotation2d(angle.getEncoder().getPosition()));
-    }
-
     //calculate velocity and angle, then set state of module
     public void setModuleState(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
         double totalXSpeed = 0;
@@ -116,15 +109,6 @@ public class SwerveModule {
 
         drivePID.setReference(velocity, ControlType.kVelocity);
         anglePID.setReference(angle, ControlType.kPosition);
-    }
-
-    //for setting the swerve module to the wanted state
-    public void setDesiredState(SwerveModuleState desiredState) {
-        // Optimize the reference state to avoid spinning further than 90 degrees
-        SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(angle.getEncoder().getPosition()));
-
-        drivePID.setReference(state.speedMetersPerSecond, ControlType.kVelocity);
-        anglePID.setReference(state.angle.getDegrees(), ControlType.kPosition);
     }
 
     //initallizing pid controllers
