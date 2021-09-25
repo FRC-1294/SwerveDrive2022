@@ -141,6 +141,9 @@ public class SwerveModule {
         //Apply changes to the goal angle
         this.setAngle = encoderPos-angleDiff;
 
+        //Slow down module if not pointing in correct direction
+        this.setVelocity *= Math.cos(Math.toRadians(angleDiff));
+
         //Apply PID loop
         drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
         anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
