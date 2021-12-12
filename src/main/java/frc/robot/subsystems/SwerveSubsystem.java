@@ -11,8 +11,12 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,10 +25,13 @@ import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {
   //init swerve drive objects
-  private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
-  private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
-  private final SwerveModule rearLeftModule = new SwerveModule(Constants.rearLeftSteer, Constants.rearLeftDrive, new double[] {-Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance});
-  private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance});
+  // private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
+  private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, 
+  new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
+  private final SwerveModule rearLeftModule = new SwerveModule(Constants.rearLeftSteer, Constants.rearLeftDrive, 
+  new double[] {-Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
+  // private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, 
+  // new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
 
   //init gyro
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -40,6 +47,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private final NetworkTableEntry backRightStateEntry = swerveTable.getEntry("backRightState");
 
   public SwerveSubsystem() {
+    frontRightModule.init();
+    rearLeftModule.init();
     gyro.reset();
   }
 
@@ -55,14 +64,18 @@ public class SwerveSubsystem extends SubsystemBase {
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     //calculates speed and angle of modules and sets states
-    frontLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
+    // frontLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
     frontRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
     rearLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
-    rearRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
+    // rearRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
 
-    frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
-    frontRightStateEntry.setDoubleArray(new double [] {frontRightModule.getSetVelocity(), frontRightModule.getSetAngle()});
-    backLeftStateEntry.setDoubleArray(new double [] {rearLeftModule.getSetVelocity(), rearLeftModule.getSetAngle()});
-    backRightStateEntry.setDoubleArray(new double [] {rearRightModule.getSetVelocity(), rearRightModule.getSetAngle()});
+    // frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
+    frontRightStateEntry.setDoubleArray(new double [] {frontRightModule.getSetAngle(), frontRightModule.getCurrentAngle()});
+    backLeftStateEntry.setDoubleArray(new double [] {rearLeftModule.getSetAngle(), rearLeftModule.getCurrentAngle()});
+    // backRightStateEntry.setDoubleArray(new double [] {rearRightModule.getSetVelocity(), rearRightModule.getSetAngle()});
+  }
+
+  public void zero() {
+    frontRightModule.zero();
   }
 }

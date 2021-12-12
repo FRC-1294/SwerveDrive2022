@@ -23,27 +23,28 @@ public final class Constants {
     public static final double maxSpeed = 12.0;
 
     //Encoders
-    public static final double angleEncoderConversionFactor = 19.969;
+    public static final double angleEncoderConversionFactor = 20;
     public static final double driveEncoderConversionFactor = 1;
 
     //PID
-    public static final Gains defaultPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -0.5, 0.5, 0);
+    public static final Gains defaultPID = new Gains(0.005, 0, 0, 0.0, 0.0, -0.5, 0.5, 0);
     public static final Gains fastPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -1, 1, 1);
     public static final int swervePIDSlot = fastPID.kSlot;
+    public static final double PIDdiff = 0.5;
 
     //JOYSTICK constants
     public static final double deadzone = 0.05;
 
     //SPARK ids
-    public static final int frontLeftSteer = 1;
-    public static final int frontLeftDrive = 2;
+    public static final int frontLeftSteer = -1;
+    public static final int frontLeftDrive = -1;
     
-    public static final int frontRightSteer = 3;
-    public static final int frontRightDrive = 4;
+    public static final int frontRightSteer = 12;
+    public static final int frontRightDrive = 10;
 
-    public static final int rearLeftSteer = 5;
-    public static final int rearLeftDrive = 6;
+    public static final int rearLeftSteer = 11;
+    public static final int rearLeftDrive = 13;
 
-    public static final int rearRightSteer = 7;
-    public static final int rearRightDrive = 8;
+    public static final int rearRightSteer = -1;
+    public static final int rearRightDrive = -1;
 }

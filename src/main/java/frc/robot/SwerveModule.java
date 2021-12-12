@@ -5,6 +5,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class SwerveModule {
     private CANSparkMax angle;
     private CANSparkMax drive;
@@ -14,19 +16,16 @@ public class SwerveModule {
     private double[] loc;
     private double setVelocity;
     private double setAngle;
+
+    private boolean invertedAngle;
     
     //init Sparks, PID, local vars
-    public SwerveModule(int steerCAN, int driveCAN, double[] loc) {
+    public SwerveModule(int steerCAN, int driveCAN, double[] loc, boolean invertedAngle) {
+        this.invertedAngle = invertedAngle;
+
         //Sparks
         angle = new CANSparkMax(steerCAN, MotorType.kBrushless);
         drive = new CANSparkMax(driveCAN, MotorType.kBrushless);
-
-        //PID
-        anglePID = angle.getPIDController();
-        drivePID = drive.getPIDController();
-
-        setPidControllers(drivePID, Constants.fastPID, Constants.fastPID.kSlot);
-        setPidControllers(anglePID, Constants.fastPID, Constants.fastPID.kSlot);
 
         //location
         this.loc = loc;
@@ -35,6 +34,22 @@ public class SwerveModule {
         angle.restoreFactoryDefaults(true);
         drive.restoreFactoryDefaults(true);
 
+        angle.setSmartCurrentLimit(60);
+        drive.setSmartCurrentLimit(60);
+
+        angle.setOpenLoopRampRate(0.5);
+        drive.setOpenLoopRampRate(0.5);
+    }
+
+    public void init() {
+        //PID
+        anglePID = angle.getPIDController();
+        drivePID = drive.getPIDController();
+
+        setPidControllers(drivePID, Constants.defaultPID, Constants.fastPID.kSlot);
+        setPidControllers(anglePID, Constants.defaultPID, Constants.fastPID.kSlot);
+
+        //encoders
         angle.getEncoder();
         angle.getEncoder().setPosition(0);
         angle.getEncoder().setPositionConversionFactor(Constants.angleEncoderConversionFactor);
@@ -42,12 +57,11 @@ public class SwerveModule {
         drive.getEncoder();
         drive.getEncoder().setPosition(0);
         drive.getEncoder().setPositionConversionFactor(Constants.driveEncoderConversionFactor);
+    }
 
-        angle.setSmartCurrentLimit(60);
-        drive.setSmartCurrentLimit(60);
-
-        angle.setOpenLoopRampRate(0.5);
-        drive.setOpenLoopRampRate(0.5);
+    public void zero() {
+        angle.getPIDController().setReference(0, ControlType.kPosition);
+        drive.set(0);
     }
 
     public double getSetVelocity() {
@@ -56,6 +70,10 @@ public class SwerveModule {
     
     public double getSetAngle() {
         return this.setAngle;
+    }
+
+    public double getCurrentAngle() {
+        return this.angle.getEncoder().getPosition();
     }
 
     //calculate velocity and angle, then set state of module
@@ -98,6 +116,7 @@ public class SwerveModule {
             //calculate FINAL velocity and angle
             this.setVelocity = Math.sqrt(Math.pow(totalXSpeed, 2) + Math.pow(totalYSpeed, 2)) * Constants.maxSpeed;
             this.setAngle = Math.toDegrees(Math.atan(totalXSpeed/totalYSpeed));
+            if (invertedAngle) this.setAngle *= -1;
 
             //handle divison by zero
             if (Double.isNaN(this.setAngle)) this.setAngle = 0;
@@ -105,10 +124,10 @@ public class SwerveModule {
             if (totalYSpeed < 0) this.setAngle = (180-Math.abs(this.setAngle)) * getSign(totalXSpeed);
             
             //apply offset for field heading to make headless
-            this.setAngle -= fieldHeading;
+            // this.setAngle -= fieldHeading;
         }
         else {
-            this.setAngle = angle.getEncoder().getPosition();
+            this.setAngle = getCurrentAngle();
             this.setVelocity = 0;
         }
 
@@ -117,13 +136,15 @@ public class SwerveModule {
 
     //for setting the swerve module to the wanted state
     public void applyState() {
+        SmartDashboard.putNumber("setAngle " + loc[0], setAngle);
+
         //wrap encoder values to always be between -180 to 180
-        if (angle.getEncoder().getPosition() > 180) angle.getEncoder().setPosition(angle.getEncoder().getPosition()-360);
-        else if (angle.getEncoder().getPosition() <= -180) angle.getEncoder().setPosition(angle.getEncoder().getPosition()+360);
+        if (getCurrentAngle() > 180) angle.getEncoder().setPosition(getCurrentAngle()-360);
+        else if (getCurrentAngle() <= -180) angle.getEncoder().setPosition(getCurrentAngle()+360);
 
         //Optimize the reference state to avoid spinning further than 90 degrees
         double angleGoal = this.setAngle;
-        double encoderPos = angle.getEncoder().getPosition();
+        double encoderPos = getCurrentAngle();
         double angleDiff = encoderPos - angleGoal;
 
         //Bridge the value wrap gap
@@ -144,9 +165,16 @@ public class SwerveModule {
         //Slow down module if not pointing in correct direction
         this.setVelocity *= Math.cos(Math.toRadians(angleDiff));
 
-        //Apply PID loop
-        drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
-        anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
+        if (Math.abs(angleDiff) > Constants.PIDdiff) {
+            //Apply PID loop
+            // drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
+            anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
+            drive.set(this.setVelocity/Constants.maxSpeed/2);
+        }
+        else {
+            angle.set(0);
+            drive.set(0);
+        }
     }
 
     //returns +1 or -1 based on num's sign
