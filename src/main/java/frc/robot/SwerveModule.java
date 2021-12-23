@@ -16,6 +16,7 @@ public class SwerveModule {
     private double[] loc;
     private double setVelocity;
     private double setAngle;
+    private double angleOffset = 0;
 
     private boolean invertedAngle;
     
@@ -46,17 +47,24 @@ public class SwerveModule {
         anglePID = angle.getPIDController();
         drivePID = drive.getPIDController();
 
-        setPidControllers(drivePID, Constants.defaultPID, Constants.fastPID.kSlot);
-        setPidControllers(anglePID, Constants.defaultPID, Constants.fastPID.kSlot);
+        setPidControllers(drivePID, Constants.anglePID, Constants.anglePID.kSlot);
+        setPidControllers(drivePID, Constants.fastPID, Constants.fastPID.kSlot);
+        setPidControllers(anglePID, Constants.anglePID, Constants.anglePID.kSlot);
+        setPidControllers(anglePID, Constants.anglePIDFast, Constants.anglePIDFast.kSlot);
 
         //encoders
         angle.getEncoder();
-        angle.getEncoder().setPosition(0);
+        // angle.getEncoder().setPosition(0);
         angle.getEncoder().setPositionConversionFactor(Constants.angleEncoderConversionFactor);
+        this.angleOffset = (int)(angle.getEncoder().getPosition() / 360) * 360 * getSign(angle.getEncoder().getPosition());
 
         drive.getEncoder();
         drive.getEncoder().setPosition(0);
         drive.getEncoder().setPositionConversionFactor(Constants.driveEncoderConversionFactor);
+    }
+
+    public void resetAngle() {
+        angle.getEncoder().setPosition(0);
     }
 
     public void zero() {
@@ -73,7 +81,7 @@ public class SwerveModule {
     }
 
     public double getCurrentAngle() {
-        return this.angle.getEncoder().getPosition();
+        return this.angle.getEncoder().getPosition()+angleOffset;
     }
 
     //calculate velocity and angle, then set state of module
@@ -121,7 +129,7 @@ public class SwerveModule {
             //handle divison by zero
             if (Double.isNaN(this.setAngle)) this.setAngle = 0;
             //handle lower quadrants (> 90 degrees)
-            if (totalYSpeed < 0) this.setAngle = (180-Math.abs(this.setAngle)) * getSign(totalXSpeed);
+            if (totalYSpeed < 0) this.setAngle = (Math.abs(this.setAngle)-180) * getSign(totalXSpeed);
             
             //apply offset for field heading to make headless
             // this.setAngle -= fieldHeading;
@@ -139,17 +147,17 @@ public class SwerveModule {
         SmartDashboard.putNumber("setAngle " + loc[0], setAngle);
 
         //wrap encoder values to always be between -180 to 180
-        if (getCurrentAngle() > 180) angle.getEncoder().setPosition(getCurrentAngle()-360);
-        else if (getCurrentAngle() <= -180) angle.getEncoder().setPosition(getCurrentAngle()+360);
+        if (getCurrentAngle() > 180) angleOffset-=360;
+        else if (getCurrentAngle() <= -180) angleOffset+=360;
 
         //Optimize the reference state to avoid spinning further than 90 degrees
         double angleGoal = this.setAngle;
         double encoderPos = getCurrentAngle();
         double angleDiff = encoderPos - angleGoal;
 
-        //Bridge the value wrap gap
+        //Bridge the value wrap gap (-90 should be equal to 270, -180 to 170 should be 10 degrees)
         if (Math.abs(angleDiff) > 180) {
-            if (encoderPos >= 0) angleDiff = encoderPos - (angleGoal+360);
+            if (encoderPos > 0) angleDiff = encoderPos - (angleGoal+360);
             else angleDiff = (encoderPos+360) - angleGoal;
         }
 
@@ -168,7 +176,7 @@ public class SwerveModule {
         if (Math.abs(angleDiff) > Constants.PIDdiff) {
             //Apply PID loop
             // drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
-            anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
+            anglePID.setReference(this.setAngle-angleOffset, ControlType.kPosition, Constants.swervePIDSlot);
             drive.set(this.setVelocity/Constants.maxSpeed/2);
         }
         else {
@@ -193,5 +201,13 @@ public class SwerveModule {
         pidController.setIZone(pidSet.kIz, slot);
         pidController.setFF(pidSet.kFF, slot);
         pidController.setOutputRange(pidSet.kMinOutput, pidSet.kMaxOutput, slot);
+    }
+
+    public void setAngle(double angle) {
+        this.setAngle = angle;
+        this.setVelocity = 0;
+        // anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
+        // drive.set(this.setVelocity/Constants.maxSpeed/2);
+        applyState();
     }
 }

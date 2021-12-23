@@ -54,11 +54,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledInit() {
-    m_robotContainer.swerve.zero();
   }
 
   @Override
   public void disabledPeriodic() {
+    if (m_robotContainer.swerve.getReset()) {
+      for (SwerveModule module : m_robotContainer.swerve.getModules()) {
+        module.resetAngle();
+      }
+    }
   }
 
   /**

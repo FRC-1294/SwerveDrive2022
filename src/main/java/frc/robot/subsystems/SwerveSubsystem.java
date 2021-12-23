@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -46,6 +48,14 @@ public class SwerveSubsystem extends SubsystemBase {
   private final NetworkTableEntry backLeftStateEntry = swerveTable.getEntry("backLeftState");
   private final NetworkTableEntry backRightStateEntry = swerveTable.getEntry("backRightState");
 
+  private final ShuffleboardTab inputTab = Shuffleboard.getTab("input");
+  private final NetworkTableEntry xSpeed = inputTab.add("xSpeed", 0).getEntry();
+  private final NetworkTableEntry ySpeed = inputTab.add("ySpeed", 0).getEntry();
+  private final NetworkTableEntry rot = inputTab.add("rot", 0).getEntry();
+  private final NetworkTableEntry angle = inputTab.add("angle", 0).getEntry();
+  private final NetworkTableEntry resetEncoders = inputTab.add("reset", false).getEntry();
+  private final NetworkTableEntry zeroEntry = inputTab.add("zero", false).getEntry();
+
   public SwerveSubsystem() {
     frontRightModule.init();
     rearLeftModule.init();
@@ -55,11 +65,29 @@ public class SwerveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     //gets joystick values
-    double xSpeed = driveController.getX(Hand.kLeft);
-    double ySpeed = -driveController.getY(Hand.kLeft);
-    double rot = (driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
+    // double xSpeed = driveController.getX(Hand.kLeft);
+    // double ySpeed = -driveController.getY(Hand.kLeft);
+    // double rot = (driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
+    double xSpeed = this.xSpeed.getDouble(0);
+    double ySpeed = this.ySpeed.getDouble(0);
+    double rot = this.rot.getDouble(0);
+    double angle = this.angle.getDouble(0);
 
-    drive(xSpeed, ySpeed, rot, true);
+    if (Math.abs(xSpeed) > 0.5) {
+      xSpeed = 0.5 * getSign(xSpeed);
+    }
+    if (Math.abs(ySpeed) > 0.5) {
+      ySpeed = 0.5 * getSign(ySpeed);
+    }
+    if (Math.abs(rot) > 0.5) {
+      rot = 0.5 * getSign(rot);
+    }
+
+    if (zeroEntry.getBoolean(false)) {
+      frontRightModule.setAngle(0);
+      rearLeftModule.setAngle(0);
+    }
+    else drive(xSpeed, ySpeed, rot, true);
   }
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
@@ -70,12 +98,28 @@ public class SwerveSubsystem extends SubsystemBase {
     // rearRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
 
     // frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
-    frontRightStateEntry.setDoubleArray(new double [] {frontRightModule.getSetAngle(), frontRightModule.getCurrentAngle()});
-    backLeftStateEntry.setDoubleArray(new double [] {rearLeftModule.getSetAngle(), rearLeftModule.getCurrentAngle()});
+    frontRightStateEntry.setDouble(frontRightModule.getCurrentAngle());
+    backLeftStateEntry.setDouble(rearLeftModule.getCurrentAngle());
     // backRightStateEntry.setDoubleArray(new double [] {rearRightModule.getSetVelocity(), rearRightModule.getSetAngle()});
   }
 
-  public void zero() {
-    frontRightModule.zero();
+  public boolean getReset() {
+    return resetEncoders.getBoolean(false);
   }
+
+  public SwerveModule[] getModules() {
+    return new SwerveModule[] {frontRightModule, rearLeftModule};
+  }
+
+  public boolean getZero() {
+    return zeroEntry.getBoolean(false);
+  }
+
+  //returns +1 or -1 based on num's sign
+  private double getSign(double num) {
+    double sign = num/Math.abs(num);
+    if (Double.isNaN(sign)) sign = 1;
+
+    return sign;
+}
 }

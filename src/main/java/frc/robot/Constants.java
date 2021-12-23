@@ -23,14 +23,15 @@ public final class Constants {
     public static final double maxSpeed = 12.0;
 
     //Encoders
-    public static final double angleEncoderConversionFactor = 20;
+    public static final double angleEncoderConversionFactor = 20.00960392;
     public static final double driveEncoderConversionFactor = 1;
 
     //PID
-    public static final Gains defaultPID = new Gains(0.005, 0, 0, 0.0, 0.0, -0.5, 0.5, 0);
+    public static final Gains anglePID = new Gains(0.005, 0, 0, 0.0, 0.0, -0.5, 0.5, 0);
+    public static final Gains anglePIDFast = new Gains(0.005, 0, 0, 0.0, 0.0, -1, 1, 1);
     public static final Gains fastPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -1, 1, 1);
-    public static final int swervePIDSlot = fastPID.kSlot;
-    public static final double PIDdiff = 0.5;
+    public static final int swervePIDSlot = anglePIDFast.kSlot;
+    public static final double PIDdiff = 1;
 
     //JOYSTICK constants
     public static final double deadzone = 0.05;
