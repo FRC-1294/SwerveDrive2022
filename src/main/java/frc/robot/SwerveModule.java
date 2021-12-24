@@ -84,6 +84,10 @@ public class SwerveModule {
         return this.angle.getEncoder().getPosition()+angleOffset;
     }
 
+    public double getRawAngle() {
+        return this.angle.getEncoder().getPosition();
+    }
+
     //calculate velocity and angle, then set state of module
     public void setModuleState(double xSpeed, double ySpeed, double rot, double fieldHeading) {
         //deadzone filtering
@@ -132,7 +136,7 @@ public class SwerveModule {
             if (totalYSpeed < 0) this.setAngle = (Math.abs(this.setAngle)-180) * getSign(totalXSpeed);
             
             //apply offset for field heading to make headless
-            // this.setAngle -= fieldHeading;
+            this.setAngle += fieldHeading;
         }
         else {
             this.setAngle = getCurrentAngle();
@@ -173,16 +177,10 @@ public class SwerveModule {
         //Slow down module if not pointing in correct direction
         this.setVelocity *= Math.cos(Math.toRadians(angleDiff));
 
-        if (Math.abs(angleDiff) > Constants.PIDdiff) {
-            //Apply PID loop
-            // drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
-            anglePID.setReference(this.setAngle-angleOffset, ControlType.kPosition, Constants.swervePIDSlot);
-            drive.set(this.setVelocity/Constants.maxSpeed/2);
-        }
-        else {
-            angle.set(0);
-            drive.set(0);
-        }
+        //Apply PID loop
+        // drivePID.setReference(this.setVelocity, ControlType.kVelocity, Constants.swervePIDSlot);
+        anglePID.setReference(this.setAngle-angleOffset, ControlType.kPosition, Constants.swervePIDSlot);
+        drive.set(this.setVelocity/Constants.maxSpeed/2);
     }
 
     //returns +1 or -1 based on num's sign
@@ -206,8 +204,7 @@ public class SwerveModule {
     public void setAngle(double angle) {
         this.setAngle = angle;
         this.setVelocity = 0;
-        // anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
-        // drive.set(this.setVelocity/Constants.maxSpeed/2);
-        applyState();
+        anglePID.setReference(this.setAngle, ControlType.kPosition, Constants.swervePIDSlot);
+        drive.set(this.setVelocity/Constants.maxSpeed/2);
     }
 }

@@ -63,6 +63,10 @@ public class Robot extends TimedRobot {
         module.resetAngle();
       }
     }
+
+    if (m_robotContainer.swerve.getGyroReset()) {
+      m_robotContainer.swerve.resetGyro();
+    }
   }
 
   /**

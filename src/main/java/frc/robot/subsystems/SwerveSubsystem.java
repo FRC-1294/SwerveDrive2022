@@ -13,11 +13,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -34,6 +31,8 @@ public class SwerveSubsystem extends SubsystemBase {
   new double[] {-Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
   // private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, 
   // new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
+
+  private final SwerveModule[] modules = new SwerveModule[] {frontRightModule, rearLeftModule};
 
   //init gyro
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -55,15 +54,24 @@ public class SwerveSubsystem extends SubsystemBase {
   private final NetworkTableEntry angle = inputTab.add("angle", 0).getEntry();
   private final NetworkTableEntry resetEncoders = inputTab.add("reset", false).getEntry();
   private final NetworkTableEntry zeroEntry = inputTab.add("zero", false).getEntry();
+  private final NetworkTableEntry resetGyro = inputTab.add("gyroReset", false).getEntry();
+
+  private boolean zeroed = false;
+  private boolean reset = true;
 
   public SwerveSubsystem() {
-    frontRightModule.init();
-    rearLeftModule.init();
-    gyro.reset();
+    for (SwerveModule module : modules) module.init();
   }
 
   @Override
   public void periodic() {
+    //reset gyro at start
+    if (reset && gyro.isConnected()) {
+      gyro.reset();
+
+      if (gyro.getAngle() == 0) reset = false;
+    }
+
     //gets joystick values
     // double xSpeed = driveController.getX(Hand.kLeft);
     // double ySpeed = -driveController.getY(Hand.kLeft);
@@ -71,7 +79,6 @@ public class SwerveSubsystem extends SubsystemBase {
     double xSpeed = this.xSpeed.getDouble(0);
     double ySpeed = this.ySpeed.getDouble(0);
     double rot = this.rot.getDouble(0);
-    double angle = this.angle.getDouble(0);
 
     if (Math.abs(xSpeed) > 0.5) {
       xSpeed = 0.5 * getSign(xSpeed);
@@ -86,16 +93,22 @@ public class SwerveSubsystem extends SubsystemBase {
     if (zeroEntry.getBoolean(false)) {
       frontRightModule.setAngle(0);
       rearLeftModule.setAngle(0);
+      frontRightStateEntry.setDouble(frontRightModule.getRawAngle());
+      backLeftStateEntry.setDouble(rearLeftModule.getRawAngle());
+      zeroed = true;
     }
-    else drive(xSpeed, ySpeed, rot, true);
+    else if (zeroed) {
+      for (SwerveModule module : modules) module.init();
+      zeroed = false;
+    }
+    else {
+      drive(xSpeed, ySpeed, rot, true);
+    }
   }
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     //calculates speed and angle of modules and sets states
-    // frontLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
-    frontRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
-    rearLeftModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
-    // rearRightModule.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
+    for (SwerveModule module : modules) module.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
 
     // frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
     frontRightStateEntry.setDouble(frontRightModule.getCurrentAngle());
@@ -108,11 +121,19 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public SwerveModule[] getModules() {
-    return new SwerveModule[] {frontRightModule, rearLeftModule};
+    return modules;
   }
 
   public boolean getZero() {
     return zeroEntry.getBoolean(false);
+  }
+
+  public boolean getGyroReset() {
+    return resetGyro.getBoolean(false);
+  }
+
+  public void resetGyro() {
+    gyro.reset();
   }
 
   //returns +1 or -1 based on num's sign
