@@ -3,6 +3,7 @@ package frc.robot;
 import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,7 +31,9 @@ public class SwerveModule {
 
         //location
         this.loc = loc;
+    }
 
+    public void init() {
         //Spark settings
         angle.restoreFactoryDefaults(true);
         drive.restoreFactoryDefaults(true);
@@ -40,9 +43,10 @@ public class SwerveModule {
 
         angle.setOpenLoopRampRate(0.5);
         drive.setOpenLoopRampRate(0.5);
-    }
 
-    public void init() {
+        angle.setIdleMode(IdleMode.kBrake);
+        drive.setIdleMode(IdleMode.kBrake);
+
         //PID
         anglePID = angle.getPIDController();
         drivePID = drive.getPIDController();

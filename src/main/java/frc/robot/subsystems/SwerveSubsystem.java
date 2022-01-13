@@ -24,15 +24,16 @@ import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {
   //init swerve drive objects
-  // private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance});
+  private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, 
+  new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
   private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, 
   new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
   private final SwerveModule rearLeftModule = new SwerveModule(Constants.rearLeftSteer, Constants.rearLeftDrive, 
   new double[] {-Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
-  // private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, 
-  // new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
+  private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, 
+  new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
 
-  private final SwerveModule[] modules = new SwerveModule[] {frontRightModule, rearLeftModule};
+  private final SwerveModule[] modules = new SwerveModule[] {frontLeftModule, frontRightModule, rearLeftModule, rearRightModule};
 
   //init gyro
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -73,28 +74,30 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     //gets joystick values
-    // double xSpeed = driveController.getX(Hand.kLeft);
-    // double ySpeed = -driveController.getY(Hand.kLeft);
-    // double rot = (driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
-    double xSpeed = this.xSpeed.getDouble(0);
-    double ySpeed = this.ySpeed.getDouble(0);
-    double rot = this.rot.getDouble(0);
+    double xSpeed = driveController.getX(Hand.kLeft);
+    double ySpeed = -driveController.getY(Hand.kLeft);
+    double rot = -(driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
+    // double xSpeed = this.xSpeed.getDouble(0);
+    // double ySpeed = this.ySpeed.getDouble(0);
+    // double rot = this.rot.getDouble(0);
 
-    if (Math.abs(xSpeed) > 0.5) {
-      xSpeed = 0.5 * getSign(xSpeed);
-    }
-    if (Math.abs(ySpeed) > 0.5) {
-      ySpeed = 0.5 * getSign(ySpeed);
-    }
-    if (Math.abs(rot) > 0.5) {
-      rot = 0.5 * getSign(rot);
-    }
+    // if (Math.abs(xSpeed) > 0.5) {
+    //   xSpeed = 0.5 * getSign(xSpeed);
+    // }
+    // if (Math.abs(ySpeed) > 0.5) {
+    //   ySpeed = 0.5 * getSign(ySpeed);
+    // }
+    // if (Math.abs(rot) > 0.5) {
+    //   rot = 0.5 * getSign(rot);
+    // }
 
     if (zeroEntry.getBoolean(false)) {
-      frontRightModule.setAngle(0);
-      rearLeftModule.setAngle(0);
+      for (SwerveModule module : modules) module.setAngle(0);
+
+      frontLeftStateEntry.setDouble(frontLeftModule.getRawAngle());
       frontRightStateEntry.setDouble(frontRightModule.getRawAngle());
       backLeftStateEntry.setDouble(rearLeftModule.getRawAngle());
+      backRightStateEntry.setDouble(rearRightModule.getRawAngle());
       zeroed = true;
     }
     else if (zeroed) {
@@ -102,7 +105,7 @@ public class SwerveSubsystem extends SubsystemBase {
       zeroed = false;
     }
     else {
-      drive(xSpeed, ySpeed, rot, true);
+      drive(xSpeed, ySpeed, rot, false);
     }
   }
   
@@ -110,10 +113,10 @@ public class SwerveSubsystem extends SubsystemBase {
     //calculates speed and angle of modules and sets states
     for (SwerveModule module : modules) module.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
 
-    // frontLeftStateEntry.setDoubleArray(new double [] {frontLeftModule.getSetVelocity(), frontLeftModule.getSetAngle()});
+    frontLeftStateEntry.setDouble(frontLeftModule.getCurrentAngle());
     frontRightStateEntry.setDouble(frontRightModule.getCurrentAngle());
     backLeftStateEntry.setDouble(rearLeftModule.getCurrentAngle());
-    // backRightStateEntry.setDoubleArray(new double [] {rearRightModule.getSetVelocity(), rearRightModule.getSetAngle()});
+    backRightStateEntry.setDouble(rearRightModule.getCurrentAngle());
   }
 
   public boolean getReset() {
