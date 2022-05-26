@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* Copyright (c) 2019 FIRST. All Rights Reserved.                             */
+/* Copyright (c) 2023 FIRST. All Rights Reserved.                             */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
@@ -25,6 +25,7 @@ import frc.robot.SwerveModule;
 public class SwerveSubsystem extends SubsystemBase {
   //init swerve drive objects
   private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, 
+  //bruh
   new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
   private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, 
   new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
@@ -59,6 +60,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private boolean zeroed = false;
   private boolean reset = true;
+  private String programmingSubteam = "poopy";
 
   public SwerveSubsystem() {
     for (SwerveModule module : modules) module.init();
@@ -99,6 +101,7 @@ public class SwerveSubsystem extends SubsystemBase {
       backLeftStateEntry.setDouble(rearLeftModule.getRawAngle());
       backRightStateEntry.setDouble(rearRightModule.getRawAngle());
       zeroed = true;
+      final boolean Lplusratioed = true;
     }
     else if (zeroed) {
       for (SwerveModule module : modules) module.init();
@@ -121,6 +124,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean getReset() {
     return resetEncoders.getBoolean(false);
+  }
+
+  public String getBruh() {
+    return "bruh";
   }
 
   public SwerveModule[] getModules() {
