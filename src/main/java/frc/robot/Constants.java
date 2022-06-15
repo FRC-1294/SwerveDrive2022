@@ -23,7 +23,8 @@ public final class Constants {
     public static final double swerveModuleYDistance = 0.381;
 
     public static final double maxSpeed = 12.0;
-
+    public static final double wheelBaseX = 8;
+    public static final double wheelBaseY = 9;
     //Encoders
     public static final double angleEncoderConversionFactor = 20.00960392;
     public static final double driveEncoderConversionFactor = 1;
@@ -51,4 +52,8 @@ public final class Constants {
     public static final int rearRightSteer = 15;
     public static final int rearRightDrive = 14;
     public static final double kRotP = 0.005;
+
+    //Change this
+    public static int rotJoystickPort = 1;
+    public static int transJoystickPort = 2;
 }

@@ -7,69 +7,80 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.util.Units;
 
 import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {
-  //init swerve drive objects
-  private final SwerveModule frontLeftModule = new SwerveModule(Constants.frontLeftSteer, Constants.frontLeftDrive, 
-  //bruh
-  new double[] {-Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
-  private final SwerveModule frontRightModule = new SwerveModule(Constants.frontRightSteer, Constants.frontRightDrive, 
-  new double[] {Constants.swerveModuleXDistance, Constants.swerveModuleYDistance}, true);
-  private final SwerveModule rearLeftModule = new SwerveModule(Constants.rearLeftSteer, Constants.rearLeftDrive, 
-  new double[] {-Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
-  private final SwerveModule rearRightModule = new SwerveModule(Constants.rearRightSteer, Constants.rearRightDrive, 
-  new double[] {Constants.swerveModuleXDistance, -Constants.swerveModuleYDistance}, true);
-
-  private final SwerveModule[] modules = new SwerveModule[] {frontLeftModule, frontRightModule, rearLeftModule, rearRightModule};
-
-  //init gyro
-  private final AHRS gyro = new AHRS(SPI.Port.kMXP);
-
-  //init joysticks
-  private final XboxController driveController = new XboxController(0);
-
-  //init network tables
-  private final NetworkTable swerveTable = NetworkTableInstance.getDefault().getTable("Swerve Data");
-  private final NetworkTableEntry frontLeftStateEntry = swerveTable.getEntry("frontLeftState");
-  private final NetworkTableEntry frontRightStateEntry = swerveTable.getEntry("frontRightState");
-  private final NetworkTableEntry backLeftStateEntry = swerveTable.getEntry("backLeftState");
-  private final NetworkTableEntry backRightStateEntry = swerveTable.getEntry("backRightState");
-
-  private final ShuffleboardTab inputTab = Shuffleboard.getTab("input");
-  private final NetworkTableEntry xSpeed = inputTab.add("xSpeed", 0).getEntry();
-  private final NetworkTableEntry ySpeed = inputTab.add("ySpeed", 0).getEntry();
-  private final NetworkTableEntry rot = inputTab.add("rot", 0).getEntry();
-  private final NetworkTableEntry angle = inputTab.add("angle", 0).getEntry();
-  private final NetworkTableEntry resetEncoders = inputTab.add("reset", false).getEntry();
-  private final NetworkTableEntry zeroEntry = inputTab.add("zero", false).getEntry();
-  private final NetworkTableEntry resetGyro = inputTab.add("gyroReset", false).getEntry();
-
-  private boolean zeroed = false;
-  private boolean reset = true;
-  private String programmingSubteam = "poopy";
+  private final SwerveModule frontLeft = new SwerveModule(Constants.frontLeftDrive, Constants.frontLeftSteer, 0,false, false,0,false);
+  private final SwerveModule frontRight = new SwerveModule(Constants.frontRightDrive, Constants.frontRightSteer,0,false,false,0,false);
+  private final SwerveModule backLeft = new SwerveModule(Constants.rearLeftDrive, Constants.rearLeftSteer,0,false,false,0,false);
+  private final SwerveModule backRight = new SwerveModule(Constants.rearRightDrive, Constants.rearRightSteer,0,false,false,0,false); 
+  private final double trackWidth = Units.inchesToMeters(Constants.wheelBaseX);
+  private final double trackLength = Units.inchesToMeters(Constants.wheelBaseY);
+  private final Joystick transJoystick;
+  private final Joystick rotJoystick;
+  private final SwerveDriveKinematics m_kinematics;
+  AHRS navx = new AHRS(Port.kMXP);
 
   public SwerveSubsystem() {
+    transJoystick = new Joystick(Constants.transJoystickPort);
+    rotJoystick = new Joystick(Constants.rotJoystickPort);
+    m_kinematics = new SwerveDriveKinematics(new Translation2d(trackWidth,-trackLength),
+    new Translation2d(trackWidth,trackLength),new Translation2d(-trackWidth,trackLength),
+    new Translation2d(-trackWidth,-trackLength));
   }
 
   @Override
   public void periodic() {
-    
+    double x= transJoystick.getX();
+    double y = transJoystick.getY();
+    double rot = rotJoystick.getX();
+
+    //Deadzones
+    if (Math.abs(x)<Constants.deadzone){
+      x = 0;
+    }
+    if (Math.abs(y)<Constants.deadzone){
+      y = 0;
+    }
+    if(Math.abs(rot)<Constants.deadzone){
+      rot = 0;
+    }
+
+    //input scaling
+    x= x*Constants.maxSpeed;
+    y= y*Constants.maxSpeed;
+    rot = rot*Constants.maxSpeed;
+
+
+
   }
   
+  public void resetGyro(){
+    navx.reset();
+  }
+  public double getHeading(){
+    return Math.IEEEremainder(navx.getAngle(), 360);
+  }
+  public Rotation2d getRotation2d(){
+    return new Rotation2d(getHeading());
+  }
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     
   }
