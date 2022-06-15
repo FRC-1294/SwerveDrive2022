@@ -63,94 +63,15 @@ public class SwerveSubsystem extends SubsystemBase {
   private String programmingSubteam = "poopy";
 
   public SwerveSubsystem() {
-    for (SwerveModule module : modules) module.init();
   }
 
   @Override
   public void periodic() {
-    //reset gyro at start
-    if (reset && gyro.isConnected()) {
-      gyro.reset();
-
-      if (gyro.getAngle() == 0) reset = false;
-    }
-
-    //gets joystick values
-    double xSpeed = driveController.getX(Hand.kLeft);
-    double ySpeed = -driveController.getY(Hand.kLeft);
-    double rot = -(driveController.getTriggerAxis(Hand.kLeft)-driveController.getTriggerAxis(Hand.kRight));
-    // double xSpeed = this.xSpeed.getDouble(0);
-    // double ySpeed = this.ySpeed.getDouble(0);
-    // double rot = this.rot.getDouble(0);
-
-    // if (Math.abs(xSpeed) > 0.5) {
-    //   xSpeed = 0.5 * getSign(xSpeed);
-    // }
-    // if (Math.abs(ySpeed) > 0.5) {
-    //   ySpeed = 0.5 * getSign(ySpeed);
-    // }
-    // if (Math.abs(rot) > 0.5) {
-    //   rot = 0.5 * getSign(rot);
-    // }
-
-    if (zeroEntry.getBoolean(false)) {
-      for (SwerveModule module : modules) module.setAngle(0);
-
-      frontLeftStateEntry.setDouble(frontLeftModule.getRawAngle());
-      frontRightStateEntry.setDouble(frontRightModule.getRawAngle());
-      backLeftStateEntry.setDouble(rearLeftModule.getRawAngle());
-      backRightStateEntry.setDouble(rearRightModule.getRawAngle());
-      zeroed = true;
-      final boolean Lplusratioed = true;
-    }
-    else if (zeroed) {
-      for (SwerveModule module : modules) module.init();
-      zeroed = false;
-    }
-    else {
-      drive(xSpeed, ySpeed, rot, false);
-    }
+    
   }
   
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
-    //calculates speed and angle of modules and sets states
-    for (SwerveModule module : modules) module.setModuleState(xSpeed, ySpeed, rot, gyro.getAngle());
-
-    frontLeftStateEntry.setDouble(frontLeftModule.getCurrentAngle());
-    frontRightStateEntry.setDouble(frontRightModule.getCurrentAngle());
-    backLeftStateEntry.setDouble(rearLeftModule.getCurrentAngle());
-    backRightStateEntry.setDouble(rearRightModule.getCurrentAngle());
+    
   }
 
-  public boolean getReset() {
-    return resetEncoders.getBoolean(false);
-  }
-
-  public String getBruh() {
-    return "bruh";
-  }
-
-  public SwerveModule[] getModules() {
-    return modules;
-  }
-
-  public boolean getZero() {
-    return zeroEntry.getBoolean(false);
-  }
-
-  public boolean getGyroReset() {
-    return resetGyro.getBoolean(false);
-  }
-
-  public void resetGyro() {
-    gyro.reset();
-  }
-
-  //returns +1 or -1 based on num's sign
-  private double getSign(double num) {
-    double sign = num/Math.abs(num);
-    if (Double.isNaN(sign)) sign = 1;
-
-    return sign;
-}
 }
