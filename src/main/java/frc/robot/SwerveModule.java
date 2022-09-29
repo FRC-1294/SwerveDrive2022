@@ -1,16 +1,14 @@
 package frc.robot;
-import java.util.concurrent.locks.Condition;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.controller.PIDController;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
 
 
 public class SwerveModule {
@@ -23,13 +21,12 @@ public class SwerveModule {
     private RelativeEncoder transEncoder;
     private RelativeEncoder rotEncoder;
     private AnalogInput universalEncoder;
-    public PIDController rotPID;
+    public SparkMaxPIDController rotPID;
     private Boolean isAbsoluteEncoder;
     private double universalEncoderOffset;
     private Boolean m_transInverted;
     private Boolean m_rotInverted;
     private Boolean encoderInverted;
-    private double ye;
    
 
     public SwerveModule(int motorTransID, int motorRotID, int universalEncoderID,
@@ -60,6 +57,10 @@ public class SwerveModule {
         System.out.println(transEncoder.getPosition());
         rotEncoder.setPositionConversionFactor(2*Math.PI);
         resetEncoders();
+        rotPID = rotMotor.getPIDController();
+        rotPID.setP(0);
+        rotPID.setI(0);
+        rotPID.setD(0);
         
     }
     public double getTransPosition(){
@@ -105,23 +106,23 @@ public class SwerveModule {
     }
     public void setDesiredState(SwerveModuleState desiredState){
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
-            SmartDashboard.putNumber("RotationPosition", getRotPosition());
-            SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
-            transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
-            if (Constants.tuningPID) {
-                rotMotor.set(rotPID.calculate(getRotPosition(), Constants.tuningSetpoint));
-            } else {
-                rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
-            }
+        SmartDashboard.putNumber("RotationPosition", getRotPosition());
+        SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
+        transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
+        //rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
+        rotPID.setReference(desiredState.angle.getRadians()/(2*Math.PI), ControlType.kPosition);
         System.out.println("setPoint is: "+ getRotPosition());
 
 
+    }
+    public void updatePositions(){
+       rotPID.setReference(Constants.tuningSetpoint/(2*Math.PI),ControlType.kPosition);
     }
     public void stop() {
         transMotor.set(0);
         rotMotor.set(0);
     }
-    public PIDController getPIDController(){
+    public SparkMaxPIDController getPIDController(){
         return this.rotPID;
     }
     public void setPidController(double p, double i, double d){
