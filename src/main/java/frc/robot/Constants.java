@@ -76,4 +76,7 @@ public final class Constants {
     //Change this
     public static int rotJoystickPort = 0;
     public static int transJoystickPort = 1;
+    public static double kP;
+    public static double kI;
+    public static double kD;
 }

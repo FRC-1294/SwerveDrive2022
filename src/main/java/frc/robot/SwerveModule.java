@@ -4,9 +4,9 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 
@@ -42,11 +42,14 @@ public class SwerveModule {
         this.universalEncoderOffset = universalEncoderOffsetinit;
         
         transMotor = new CANSparkMax(this.m_MotorTransID, MotorType.kBrushless);
+        
         rotMotor = new CANSparkMax(this.m_MotorRotID, MotorType.kBrushless);
         if (isAbsEncoder){
             universalEncoder = new AnalogInput(this.m_UniversalEncoderID);
-        
         }
+
+        rotMotor.restoreFactoryDefaults(true);
+        transMotor.restoreFactoryDefaults(true);
 
         transMotor.setInverted(this.m_transInverted);
         rotMotor.setInverted(this.m_rotInverted);
