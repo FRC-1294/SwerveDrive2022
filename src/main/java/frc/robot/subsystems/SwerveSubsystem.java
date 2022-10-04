@@ -58,7 +58,7 @@ public class SwerveSubsystem extends SubsystemBase {
     frontRight.resetEncoders();
     backLeft.resetEncoders();
     backRight.resetEncoders();
-
+    setAllPIDControllers(0.15, 0, 0);
     SmartDashboard.putNumber("p", 0);
     SmartDashboard.putNumber("i", 0);
     SmartDashboard.putNumber("d", 0);
@@ -67,7 +67,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    
     if(Constants.tuningPID){
+
       if(Constants.kP != SmartDashboard.getNumber("p", 0) || Constants.kI != SmartDashboard.getNumber("i", 0) ||  Constants.kI != SmartDashboard.getNumber("i", 0))
         setAllPIDControllers(SmartDashboard.getNumber("p",0), SmartDashboard.getNumber("i", 0), SmartDashboard.getNumber("d", 0));
         Constants.kP = SmartDashboard.getNumber("p", 0);

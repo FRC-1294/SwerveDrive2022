@@ -53,7 +53,7 @@ public final class Constants {
     public static double tuningSetpoint = 0;
     // Distance between right and left wheels
     public static final double kWheelBase = Units.inchesToMeters(25.5);
-    public static final Boolean tuningPID = true;
+    public static final Boolean tuningPID = false;
     //JOYSTICK constants
     public static final double deadzone = 0.1;
 
