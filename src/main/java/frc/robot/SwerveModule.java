@@ -58,7 +58,7 @@ public class SwerveModule {
         rotEncoder = rotMotor.getEncoder();
         
         System.out.println(transEncoder.getPosition());
-        rotEncoder.setPositionConversionFactor(2*Math.PI);
+        //rotEncoder.setPositionConversionFactor(2*Math.PI);
         resetEncoders();
         rotPID = rotMotor.getPIDController();
         rotPID.setP(0);
@@ -71,9 +71,10 @@ public class SwerveModule {
         return transEncoder.getPosition();
     }
     public double getRotPosition(){
-        double jesus = rotEncoder.getPosition()- (int)(rotEncoder.getPosition());
-        jesus = jesus * 2*Math.PI;
-        return jesus;
+        //double jesus = rotEncoder.getPosition()- (int)(rotEncoder.getPosition());
+        //jesus = jesus * 2*Math.PI;
+        //return jesus;
+        return rotEncoder.getPosition();
     
     }
     public double getTransVelocity(){
@@ -114,7 +115,7 @@ public class SwerveModule {
         transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
         //rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
         rotPID.setReference(desiredState.angle.getRadians()/(2*Math.PI), ControlType.kPosition);
-        System.out.println("setPoint is: "+ getRotPosition());
+        System.out.println("setPoint is: "+ desiredState.angle.getRadians()/(2*Math.PI));
 
 
     }
