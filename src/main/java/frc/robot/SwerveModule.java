@@ -61,9 +61,6 @@ public class SwerveModule {
         //rotEncoder.setPositionConversionFactor(2*Math.PI);
         resetEncoders();
         rotPID = rotMotor.getPIDController();
-        rotPID.setP(0);
-        rotPID.setI(0);
-        rotPID.setD(0);
         
     }
     public double getTransPosition(){
@@ -71,10 +68,7 @@ public class SwerveModule {
         return transEncoder.getPosition();
     }
     public double getRotPosition(){
-        //double jesus = rotEncoder.getPosition()- (int)(rotEncoder.getPosition());
-        //jesus = jesus * 2*Math.PI;
-        //return jesus;
-        return rotEncoder.getPosition();
+        return getRotPosition();
     
     }
     public double getTransVelocity(){
@@ -109,18 +103,26 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
     }
     public void setDesiredState(SwerveModuleState desiredState){
+        if (rotEncoder.getPosition()>2*Math.PI){
+            Double offset = rotEncoder.getPosition() - 2*Math.PI;
+            rotEncoder.setPosition(offset);
+        }
+        if (rotEncoder.getPosition()<-2*Math.PI){
+            Double offset = rotEncoder.getPosition() + 2*Math.PI;
+            rotEncoder.setPosition(offset);
+        }
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
         SmartDashboard.putNumber("RotationPosition", getRotPosition());
         SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
         transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
         //rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
-        rotPID.setReference(desiredState.angle.getRadians()/(2*Math.PI), ControlType.kPosition);
-        System.out.println("setPoint is: "+ desiredState.angle.getRadians()/(2*Math.PI));
+        rotPID.setReference(desiredState.angle.getRadians(), ControlType.kPosition);
+        System.out.println("setPoint is: "+ getRotPosition());
 
 
     }
     public void updatePositions(){
-       rotPID.setReference(Constants.tuningSetpoint/(2*Math.PI),ControlType.kPosition);
+       rotPID.setReference(Constants.tuningSetpoint,ControlType.kPosition);
     }
     public void stop() {
         transMotor.set(0);
