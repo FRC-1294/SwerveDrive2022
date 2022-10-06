@@ -58,7 +58,7 @@ public class SwerveModule {
         rotEncoder = rotMotor.getEncoder();
         
         System.out.println(transEncoder.getPosition());
-        //rotEncoder.setPositionConversionFactor(2*Math.PI);
+        rotEncoder.setPositionConversionFactor(2*Math.PI);
         resetEncoders();
         rotPID = rotMotor.getPIDController();
         
