@@ -62,15 +62,14 @@ public class SwerveModule {
         resetEncoders();
         rotPID = rotMotor.getPIDController();
         
+        
     }
     public double getTransPosition(){
         
         return transEncoder.getPosition();
     }
     public double getRotPosition(){
-        double jesus = rotEncoder.getPosition() - (int)(rotEncoder.getPosition());
-        //jesus = jesus * 2*Math.PI;
-        return jesus;
+        return rotEncoder.getPosition();
     
     }
     public double getTransVelocity(){
@@ -105,6 +104,12 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
     }
     public void setDesiredState(SwerveModuleState desiredState){
+        if (rotEncoder.getPosition()>2*Math.PI){
+            rotEncoder.setPosition(0);
+        }
+        if (rotEncoder.getPosition()<2*Math.PI){
+            rotEncoder.setPosition(0);
+        }
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
         SmartDashboard.putNumber("RotationPosition", getRotPosition());
         SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
