@@ -4,6 +4,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,12 +23,13 @@ public class SwerveModule {
     private RelativeEncoder rotEncoder;
     private AnalogInput universalEncoder;
     public SparkMaxPIDController rotPID;
+    public PIDController rotationPIDTest;
     private Boolean isAbsoluteEncoder;
     private double universalEncoderOffset;
     private Boolean m_transInverted;
     private Boolean m_rotInverted;
     private Boolean encoderInverted;
-   
+    
 
     public SwerveModule(int motorTransID, int motorRotID, int universalEncoderID,
      Boolean transInverted, Boolean rotInverted, double universalEncoderOffsetinit,
@@ -61,6 +63,8 @@ public class SwerveModule {
         rotEncoder.setPositionConversionFactor(2*Math.PI);
         resetEncoders();
         rotPID = rotMotor.getPIDController();
+        rotationPIDTest = new PIDController(0.15, 0, 0);
+        rotationPIDTest.enableContinuousInput(-Math.PI, Math.PI);
         
         
     }
@@ -104,12 +108,12 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
     }
     public void setDesiredState(SwerveModuleState desiredState){
-        if (rotEncoder.getPosition()>2*Math.PI){
-            Double offset = rotEncoder.getPosition() - 2*Math.PI;
+        if (rotEncoder.getPosition()>Math.PI){
+            Double offset = rotEncoder.getPosition() - Math.PI;
             rotEncoder.setPosition(offset);
         }
-        if (rotEncoder.getPosition()<-2*Math.PI){
-            Double offset = rotEncoder.getPosition() + 2*Math.PI;
+        if (rotEncoder.getPosition()<-Math.PI){
+            Double offset = rotEncoder.getPosition() + Math.PI;
             rotEncoder.setPosition(offset);
         }
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
@@ -117,7 +121,8 @@ public class SwerveModule {
         SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
         transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
         //rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
-        rotPID.setReference(desiredState.angle.getRadians(), ControlType.kPosition);
+        //rotPID.setReference(desiredState.angle.getRadians(), ControlType.kPosition);
+        rotMotor.set(rotationPIDTest.calculate(getRotPosition(),desiredState.angle.getRadians()));
         System.out.println("setPoint is: "+ getRotPosition());
 
 
