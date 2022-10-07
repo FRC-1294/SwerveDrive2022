@@ -34,7 +34,7 @@ public class Camera extends SubsystemBase {
     HighGui.namedWindow("BlueBalls");
     HighGui.namedWindow("RedBalls");
     HighGui.waitKey();
-    
+    System.out.println("yes");
   }
 
   @Override
