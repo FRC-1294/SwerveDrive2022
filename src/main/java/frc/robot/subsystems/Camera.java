@@ -40,7 +40,7 @@ public class Camera extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    Mat orImage = Imgcodecs.imread("rage.jpeg");
+    Mat orImage = Imgcodecs.imread("rage.jpg");
     List<Mat> colors = new ArrayList<Mat>();
     //cvSink.grabFrame(img);
     Core.split(orImage,colors);
