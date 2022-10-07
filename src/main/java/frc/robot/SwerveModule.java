@@ -108,7 +108,6 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
     }
     public void setDesiredState(SwerveModuleState desiredState){
-        /*
         if (rotEncoder.getPosition()>Math.PI){
             Double offset = rotEncoder.getPosition() - Math.PI;
             rotEncoder.setPosition(0);
@@ -117,7 +116,6 @@ public class SwerveModule {
             Double offset = rotEncoder.getPosition() + Math.PI;
             rotEncoder.setPosition(0);
         }
-        */
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
         SmartDashboard.putNumber("RotationPosition", getRotPosition());
         SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
