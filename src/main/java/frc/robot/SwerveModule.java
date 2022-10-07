@@ -3,6 +3,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -59,12 +60,12 @@ public class SwerveModule {
         transEncoder = transMotor.getEncoder();
         rotEncoder = rotMotor.getEncoder();
         
-        System.out.println(transEncoder.getPosition());
+        //System.out.println(transEncoder.getPosition());
         rotEncoder.setPositionConversionFactor(2*Math.PI);
         resetEncoders();
         rotPID = rotMotor.getPIDController();
         rotationPIDTest = new PIDController(0.15, 0, 0);
-        rotationPIDTest.enableContinuousInput(-Math.PI, Math.PI);
+        rotationPIDTest.enableContinuousInput(-Math.PI/2, Math.PI/2);
         
         
     }
