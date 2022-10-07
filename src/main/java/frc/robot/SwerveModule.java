@@ -69,11 +69,10 @@ public class SwerveModule {
         
     }
     public double getTransPosition(){
-        
         return transEncoder.getPosition();
     }
     public double getRotPosition(){
-        return getRotPosition();
+        return rotEncoder.getPosition();
     
     }
     public double getTransVelocity(){
@@ -108,11 +107,14 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
     }
     public void setDesiredState(SwerveModuleState desiredState){
-        if (rotEncoder.getPosition()>Math.PI){
+        if(Math.abs(desiredState.speedMetersPerSecond)<0.001){
+            transMotor.stopMotor();
+        }
+        if (rotEncoder.getPosition()>Math.PI/2){
             Double offset = rotEncoder.getPosition() - Math.PI;
             rotEncoder.setPosition(offset);
         }
-        if (rotEncoder.getPosition()<-Math.PI){
+        if (rotEncoder.getPosition()<-Math.PI/2){
             Double offset = rotEncoder.getPosition() + Math.PI;
             rotEncoder.setPosition(offset);
         }
