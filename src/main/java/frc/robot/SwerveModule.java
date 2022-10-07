@@ -124,7 +124,7 @@ public class SwerveModule {
         SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
         transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
         //rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
-        //rotPID.setReference(desiredState.angle.getRadians(), ControlType.kPosition);
+        //rotPID.setReference(desiredState.angle.getRadians()-getRotPosition(), ControlType.kPosition);
         rotMotor.set(rotationPIDTest.calculate(getRotPosition(),desiredState.angle.getRadians()));
         System.out.println("setPoint is: "+ getRotPosition());
 
