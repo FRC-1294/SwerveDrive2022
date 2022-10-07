@@ -58,7 +58,7 @@ public class SwerveSubsystem extends SubsystemBase {
     frontRight.resetEncoders();
     backLeft.resetEncoders();
     backRight.resetEncoders();
-    setAllPIDControllers(0.15, 0, 0);
+    setAllPIDControllers(0.05, 0, 0);
     SmartDashboard.putNumber("p", 0);
     SmartDashboard.putNumber("i", 0);
     SmartDashboard.putNumber("d", 0);
@@ -103,13 +103,8 @@ public class SwerveSubsystem extends SubsystemBase {
               * Constants.kTeleDriveMaxAngularSpeedRadiansPerSecond;
       ChassisSpeeds chassisSpeeds1 = new ChassisSpeeds(y,x, rot);
       SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(chassisSpeeds1);
-  
       SmartDashboard.putNumber("JOYSTICK Y", y);
       this.setModuleStates(moduleStates);
-      SmartDashboard.putNumber("Module1ROT", moduleStates[0].angle.getRadians());
-      SmartDashboard.putNumber("Module2ROT", moduleStates[1].angle.getRadians());
-      SmartDashboard.putNumber("Module3ROT", moduleStates[2].angle.getRadians());
-      SmartDashboard.putNumber("Module4ROT", moduleStates[3].angle.getRadians());
       SmartDashboard.putNumber("Module1CurrentROT",frontLeft.getRotPosition());
       SmartDashboard.putNumber("Module2CurrentROT", frontRight.getRotPosition());
       SmartDashboard.putNumber("Module3CurrentROT", backLeft.getRotPosition());
@@ -136,6 +131,11 @@ public class SwerveSubsystem extends SubsystemBase {
     frontRight.setDesiredState(desiredStates[1]);
     backLeft.setDesiredState(desiredStates[2]);
     backRight.setDesiredState(desiredStates[3]);
+    SmartDashboard.putNumber("Module1ROT", desiredStates[0].angle.getRadians());
+    SmartDashboard.putNumber("Module2ROT", desiredStates[1].angle.getRadians());
+    SmartDashboard.putNumber("Module3ROT", desiredStates[2].angle.getRadians());
+    SmartDashboard.putNumber("Module4ROT", desiredStates[3].angle.getRadians());
+
 }
 private void setAllPIDControllers(double p, double i, double d) {
   frontRight.setPidController(p, i, d);
