@@ -69,7 +69,7 @@ public class SwerveModule {
         return transEncoder.getPosition();
     }
     public double getRotPosition(){
-        return getRotPosition();
+        return rotEncoder.getPosition();
     
     }
     public double getTransVelocity(){
@@ -108,6 +108,7 @@ public class SwerveModule {
             Double offset = rotEncoder.getPosition() - 2*Math.PI;
             rotEncoder.setPosition(offset);
         }
+
         if (rotEncoder.getPosition()<-2*Math.PI){
             Double offset = rotEncoder.getPosition() + 2*Math.PI;
             rotEncoder.setPosition(offset);
