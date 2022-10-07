@@ -58,7 +58,7 @@ public class SwerveSubsystem extends SubsystemBase {
     frontRight.resetEncoders();
     backLeft.resetEncoders();
     backRight.resetEncoders();
-    setAllPIDControllers(0.15, 0, 0);
+    setAllPIDControllers(0.05, 0, 0);
     SmartDashboard.putNumber("p", 0);
     SmartDashboard.putNumber("i", 0);
     SmartDashboard.putNumber("d", 0);
