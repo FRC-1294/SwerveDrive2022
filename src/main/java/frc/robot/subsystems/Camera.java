@@ -31,21 +31,14 @@ public class Camera extends SubsystemBase {
     CameraServer.startAutomaticCapture();
     cvSink = CameraServer.getVideo();
     outputStream = CameraServer.putVideo("Blur", 640, 480);
-    HighGui.namedWindow("BlueBalls");
-    HighGui.namedWindow("RedBalls");
+    HighGui.createJFrame("BlueBalls",HighGui.WINDOW_NORMAL);
+    HighGui.createJFrame("RedBalls",HighGui.WINDOW_NORMAL);
     HighGui.waitKey();
-    System.out.println("yes");
-  }
-
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
     Mat orImage = Imgcodecs.imread("rage.jpg");
     List<Mat> colors = new ArrayList<Mat>();
     //cvSink.grabFrame(img);
     Core.split(orImage,colors);
     Mat sheesh[] = new Mat[colors.size()]; 
-    
     colors.toArray(sheesh);
     Mat BlueMask = sheesh[0];
     Mat RedMask = sheesh[2];
@@ -53,8 +46,17 @@ public class Camera extends SubsystemBase {
     Imgproc.blur(RedMask, RedMask, new Size(3,3));
     drawCrossHairs(BlueMask);
     drawCrossHairs(RedMask);
+    HighGui.toBufferedImage(applyBoundingBox(BlueMask));
+    HighGui.toBufferedImage(applyBoundingBox(RedMask));
     HighGui.imshow("BlueBalls", applyBoundingBox(BlueMask));
     HighGui.imshow("RedBalls", applyBoundingBox(RedMask));
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+
+
     
   }
   public static Mat drawCrossHairs(Mat targImg){
