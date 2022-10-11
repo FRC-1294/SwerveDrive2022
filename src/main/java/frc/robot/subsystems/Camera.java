@@ -40,26 +40,39 @@ public class Camera extends SubsystemBase {
   public CvSource outputStream;
   public Mat img;
   public JFrame frame;
+  public Mat BlueMask;
+  public Mat RedMask;
+  public JFrame frameRed;
     // Creates the CvSink and connects it to the UsbCamera
 
   public Camera() {
+   setup();
+  }
+  private void setup(){
     CameraServer.startAutomaticCapture();
     cvSink = CameraServer.getVideo();
     outputStream = CameraServer.putVideo("Blur", 640, 480);
-    frame = new JFrame("Creating Bounding boxes and circles for contours demo");
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    Image finalImage = HighGui.toBufferedImage(img);
-    JPanel imgPanel = new JPanel();
-    JLabel imgContoursLabel = new JLabel(new ImageIcon(finalImage));
-    imgPanel.add(imgContoursLabel);
-    frame.getContentPane().add(imgPanel);
+    update();
+    createFrames(frame.getContentPane(), BlueMask, "blueMask");
+    createFrames(frameRed.getContentPane(), RedMask, "RedMask");
     frame.pack();
     frame.setVisible(true);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frameRed.pack();
+    frameRed.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frameRed.setVisible(true);
 
-    HighGui.waitKey();
-    System.out.println("yes");
-
-
+  }
+  private void createFrames(Container title, Mat image,String windowName){
+    frameRed = new JFrame(windowName);
+    
+    Image finalImage = HighGui.toBufferedImage(image);
+    JPanel imgPanel = new JPanel();
+    JLabel imgContourLabel = new JLabel(new ImageIcon(finalImage));
+    imgPanel.add(imgContourLabel);
+    title.add(imgPanel);
+  }
+  private void update(){
     Mat orImage = Imgcodecs.imread("rage.jpg");
     List<Mat> colors = new ArrayList<Mat>();
     cvSink.grabFrame(img);
@@ -72,6 +85,8 @@ public class Camera extends SubsystemBase {
     Imgproc.blur(RedMask, RedMask, new Size(3,3));
     drawCrossHairs(BlueMask);
     drawCrossHairs(RedMask);
+    applyBoundingBox(BlueMask);
+    applyBoundingBox(RedMask);
     HighGui.imshow("BlueBalls", applyBoundingBox(BlueMask));
     HighGui.imshow("RedBalls", applyBoundingBox(RedMask));  
   }
