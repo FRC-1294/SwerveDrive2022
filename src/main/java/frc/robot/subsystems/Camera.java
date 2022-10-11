@@ -47,6 +47,7 @@ public class Camera extends SubsystemBase {
 
   public Camera() {
    setup();
+   update();
   }
   private void setup(){
     CameraServer.startAutomaticCapture();
@@ -61,11 +62,9 @@ public class Camera extends SubsystemBase {
     frameRed.pack();
     frameRed.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frameRed.setVisible(true);
-
   }
   private void createFrames(Container title, Mat image,String windowName){
     frameRed = new JFrame(windowName);
-    
     Image finalImage = HighGui.toBufferedImage(image);
     JPanel imgPanel = new JPanel();
     JLabel imgContourLabel = new JLabel(new ImageIcon(finalImage));
@@ -87,8 +86,8 @@ public class Camera extends SubsystemBase {
     drawCrossHairs(RedMask);
     applyBoundingBox(BlueMask);
     applyBoundingBox(RedMask);
-    HighGui.imshow("BlueBalls", applyBoundingBox(BlueMask));
-    HighGui.imshow("RedBalls", applyBoundingBox(RedMask));  
+    frame.repaint();
+    frameRed.repaint(); 
   }
 
   @Override
