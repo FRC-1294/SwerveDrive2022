@@ -50,9 +50,11 @@ public class Camera extends SubsystemBase {
    update();
   }
   private void setup(){
+    /*
     CameraServer.startAutomaticCapture();
     cvSink = CameraServer.getVideo();
     outputStream = CameraServer.putVideo("Blur", 640, 480);
+    */
     update();
     createFrames(frame.getContentPane(), BlueMask, "blueMask");
     createFrames(frameRed.getContentPane(), RedMask, "RedMask");
@@ -115,6 +117,3 @@ public class Camera extends SubsystemBase {
     return edgedUpMap;
   }
 }
-//action: the avengers, the matrix
-// animated =  none
-//comedy: inside out
