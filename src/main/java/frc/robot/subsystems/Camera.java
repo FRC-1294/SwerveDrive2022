@@ -11,9 +11,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Image;
+import java.util.Random;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 
 import javax.swing.JFrame;
-
+import java.awt.Image;
+import java.awt.Container;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -25,19 +39,30 @@ public class Camera extends SubsystemBase {
   public CvSink cvSink;
   public CvSource outputStream;
   public Mat img;
+  public JFrame frame;
     // Creates the CvSink and connects it to the UsbCamera
 
   public Camera() {
     CameraServer.startAutomaticCapture();
     cvSink = CameraServer.getVideo();
     outputStream = CameraServer.putVideo("Blur", 640, 480);
-    HighGui.namedWindow("BlueBalls",HighGui.WINDOW_NORMAL);
-    HighGui.namedWindow("RedBalls",HighGui.WINDOW_NORMAL);
+    frame = new JFrame("Creating Bounding boxes and circles for contours demo");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    Image finalImage = HighGui.toBufferedImage(img);
+    JPanel imgPanel = new JPanel();
+    JLabel imgContoursLabel = new JLabel(new ImageIcon(finalImage));
+    imgPanel.add(imgContoursLabel);
+    frame.getContentPane().add(imgPanel);
+    frame.pack();
+    frame.setVisible(true);
+
     HighGui.waitKey();
     System.out.println("yes");
+
+
     Mat orImage = Imgcodecs.imread("rage.jpg");
     List<Mat> colors = new ArrayList<Mat>();
-    //cvSink.grabFrame(img);
+    cvSink.grabFrame(img);
     Core.split(orImage,colors);
     Mat sheesh[] = new Mat[colors.size()]; 
     colors.toArray(sheesh);
@@ -48,7 +73,7 @@ public class Camera extends SubsystemBase {
     drawCrossHairs(BlueMask);
     drawCrossHairs(RedMask);
     HighGui.imshow("BlueBalls", applyBoundingBox(BlueMask));
-    HighGui.imshow("RedBalls", applyBoundingBox(RedMask));
+    HighGui.imshow("RedBalls", applyBoundingBox(RedMask));  
   }
 
   @Override
