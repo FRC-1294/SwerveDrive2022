@@ -73,7 +73,15 @@ public class SwerveModule {
         return transEncoder.getPosition();
     }
     public double getRotPosition(){
-        return rotMotor.getEncoder().getPosition();
+        if (rotEncoder.getPosition()>2*Math.PI){
+            Double offset = rotEncoder.getPosition() - 2*Math.PI;
+            rotEncoder.setPosition(offset);
+        }
+        if (rotEncoder.getPosition()<-2*Math.PI){
+            Double offset = rotEncoder.getPosition() + 2*Math.PI;
+            rotEncoder.setPosition(offset);
+        }
+        return rotEncoder.getPosition();
     
     }
     public double getTransVelocity(){
@@ -108,22 +116,15 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
     }
     public void setDesiredState(SwerveModuleState desiredState){
-        if (rotEncoder.getPosition()>Math.PI){
-            Double offset = rotEncoder.getPosition() - Math.PI;
-            rotEncoder.setPosition(0);
-        }
-        if (rotEncoder.getPosition()<-Math.PI){
-            Double offset = rotEncoder.getPosition() + Math.PI;
-            rotEncoder.setPosition(0);
-        }
-        desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
-        SmartDashboard.putNumber("RotationPosition", getRotPosition());
-        SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
+        SwerveModuleState.optimize(desiredState, getState().angle);
+        
         transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
         //rotMotor.set(rotPID.calculate(getRotPosition(),desiredState.angle.getRadians()));
         //rotPID.setReference(desiredState.angle.getRadians(), ControlType.kPosition);
         rotMotor.set(rotationPIDTest.calculate(getRotPosition(),desiredState.angle.getRadians()));
-        System.out.println("setPoint is: "+ getRotPosition());
+        SmartDashboard.putNumber("RotationPosition", getRotPosition());
+        SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
+        //System.out.println("setPoint is: "+ getRotPosition());
 
 
     }

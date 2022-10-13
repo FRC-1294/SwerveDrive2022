@@ -46,9 +46,11 @@ public class Camera extends SubsystemBase {
     // Creates the CvSink and connects it to the UsbCamera
 
   public Camera() {
+   System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
    setup();
    update();
   }
+
   private void setup(){
     /*
     CameraServer.startAutomaticCapture();
@@ -80,8 +82,8 @@ public class Camera extends SubsystemBase {
     Core.split(orImage,colors);
     Mat sheesh[] = new Mat[colors.size()]; 
     colors.toArray(sheesh);
-    Mat BlueMask = sheesh[0];
-    Mat RedMask = sheesh[2];
+    BlueMask = sheesh[0];
+    RedMask = sheesh[2];
     Imgproc.blur(BlueMask, BlueMask, new Size(3,3));
     Imgproc.blur(RedMask, RedMask, new Size(3,3));
     drawCrossHairs(BlueMask);
