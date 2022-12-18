@@ -33,8 +33,8 @@ public final class Constants {
     public static final double kTeleDriveMaxSpeedMetersPerSecond = 1;
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = //
             kPhysicalMaxAngularSpeedRadiansPerSecond / 4;
-    public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
-    public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
+    public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 4;
+    public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 4;
     public static final double kDriveEncoderRot2Meter = Math.PI * Units.inchesToMeters(4);
     public static final double kTurningEncoderRot2Rad = 2 * Math.PI;
     public static final double kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60;
@@ -49,26 +49,28 @@ public final class Constants {
     public static final Gains fastPID = new Gains(0.05, 0.00001, 0.7, 0.0, 0.0, -1, 1, 1);
     public static final int swervePIDSlot = anglePIDFast.kSlot;
     public static final double PIDdiff = 1;
-    public static final double kTrackWidth = Units.inchesToMeters(21);
+    public static final double kTrackWidth = Units.inchesToMeters(25.5);
     public static double tuningSetpoint = 0;
     // Distance between right and left wheels
     public static final double kWheelBase = Units.inchesToMeters(25.5);
-    public static final Boolean tuningPID = false;
+    public static final Boolean tuningPID =false;
     //JOYSTICK constants
     public static final double deadzone = 0.1;
 
     //SPARK ids
-    public static final int frontLeftSteer = 13;
-    public static final int frontLeftDrive = 12;
+    public static final int frontLeftSteer = 14;//
+    public static final int frontLeftDrive = 13;//
     
-    public static final int frontRightSteer = 1;
-    public static final int frontRightDrive = 4;
+    public static final int frontRightSteer = 2;//
+    public static final int frontRightDrive = 4;//
 
-    public static final int rearLeftSteer = 2;
-    public static final int rearLeftDrive = 3;
+    public static final int rearLeftSteer = 3;//
+    public static final int rearLeftDrive = 12;//
 
-    public static final int rearRightSteer = 15;
-    public static final int rearRightDrive = 14;
+    public static final int rearRightSteer = 1;//
+    public static final int rearRightDrive = 5; // 
+
+
     public static final double kRotP = 0.005;
 
     //TEJA IS COOL
@@ -76,7 +78,9 @@ public final class Constants {
     //Change this
     public static int rotJoystickPort = 0;
     public static int transJoystickPort = 1;
-    public static double kP;
-    public static double kI;
-    public static double kD;
+    public static double kP = 0;
+    public static double kI = 0;
+    public static double kD = 0;
+    public static int intakeSolenoid1ID;
+    public static int compressorID;
 }

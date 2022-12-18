@@ -29,9 +29,10 @@ import frc.robot.Constants;
 import frc.robot.SwerveModule;
 
 public class SwerveSubsystem extends SubsystemBase {
-  private final SwerveModule frontLeft = new SwerveModule(Constants.frontLeftDrive, Constants.frontLeftSteer, 0,true, true,0,false, false);
-  private final SwerveModule frontRight = new SwerveModule(Constants.frontRightDrive, Constants.frontRightSteer,0,true,true,0,false, false);
-  private final SwerveModule backLeft = new SwerveModule(Constants.rearLeftDrive, Constants.rearLeftSteer,0,true,true,0,false, false);
+  //Bevel Gear must be facing to the left in order to work
+  private final SwerveModule frontLeft = new SwerveModule(Constants.frontLeftDrive, Constants.frontLeftSteer, 0,false, true,0,false, false);
+  private final SwerveModule frontRight = new SwerveModule(Constants.frontRightDrive, Constants.frontRightSteer,0,false,true,0,false, false);
+  private final SwerveModule backLeft = new SwerveModule(Constants.rearLeftDrive, Constants.rearLeftSteer,0,false,true,0,false, false);
   private final SwerveModule backRight = new SwerveModule(Constants.rearRightDrive, Constants.rearRightSteer,0,false,true,0,false, false); 
   private final Joystick transJoystick;
   private final Joystick rotJoystick;
@@ -53,12 +54,11 @@ public class SwerveSubsystem extends SubsystemBase {
       new Translation2d(-Constants.kWheelBase / 2, Constants.kTrackWidth / 2));
     xLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAccelerationUnitsPerSecond);
     yLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAccelerationUnitsPerSecond);
-    turningLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAngularAccelerationUnitsPerSecond);
+    turningLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAngularAccelerationUnitsPerSecond*2);
     frontLeft.resetEncoders();
     frontRight.resetEncoders();
     backLeft.resetEncoders();
     backRight.resetEncoders();
-    setAllPIDControllers(0.05, 0, 0);
     SmartDashboard.putNumber("p", 0);
     SmartDashboard.putNumber("i", 0);
     SmartDashboard.putNumber("d", 0);
@@ -69,7 +69,6 @@ public class SwerveSubsystem extends SubsystemBase {
   public void periodic() {
     
     if(Constants.tuningPID){
-
       if(Constants.kP != SmartDashboard.getNumber("p", 0) || Constants.kI != SmartDashboard.getNumber("i", 0) ||  Constants.kI != SmartDashboard.getNumber("i", 0))
         setAllPIDControllers(SmartDashboard.getNumber("p",0), SmartDashboard.getNumber("i", 0), SmartDashboard.getNumber("d", 0));
         Constants.kP = SmartDashboard.getNumber("p", 0);
@@ -85,10 +84,16 @@ public class SwerveSubsystem extends SubsystemBase {
         frontRight.updatePositions();
         backLeft.updatePositions();
         backRight.updatePositions();
+        
+        SmartDashboard.putNumber("Module1CurrentROT",frontLeft.getRotPosition());
+        SmartDashboard.putNumber("Module2CurrentROT", frontRight.getRotPosition());
+        SmartDashboard.putNumber("Module3CurrentROT", backLeft.getRotPosition());
+        SmartDashboard.putNumber("Module4CurrentROT", backRight.getRotPosition());
       }
     else{
-      double x= transJoystick.getX();
-      double y = transJoystick.getY();
+
+      double x= transJoystick.getY();
+      double y = transJoystick.getX();
       double rot = rotJoystick.getX();
   
   
@@ -97,14 +102,15 @@ public class SwerveSubsystem extends SubsystemBase {
       rot = Math.abs(rot) > 0.05 ? rot : 0.0;
       
       // 3. Make the driving smoother
-      x = xLimiter.calculate(x) * Constants.kTeleDriveMaxSpeedMetersPerSecond;
-      y = yLimiter.calculate(y) * Constants.kTeleDriveMaxSpeedMetersPerSecond;
+      x = xLimiter.calculate(x) * 5;
+      y = yLimiter.calculate(y) * 5;
       rot= turningLimiter.calculate(rot)
               * Constants.kTeleDriveMaxAngularSpeedRadiansPerSecond;
-      ChassisSpeeds chassisSpeeds1 = new ChassisSpeeds(y,x, rot);
+      ChassisSpeeds chassisSpeeds1 = new ChassisSpeeds(x,y, rot);
       SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(chassisSpeeds1);
       SmartDashboard.putNumber("JOYSTICK Y", y);
       this.setModuleStates(moduleStates);
+
       SmartDashboard.putNumber("Module1CurrentROT",frontLeft.getRotPosition());
       SmartDashboard.putNumber("Module2CurrentROT", frontRight.getRotPosition());
       SmartDashboard.putNumber("Module3CurrentROT", backLeft.getRotPosition());
@@ -126,18 +132,19 @@ public class SwerveSubsystem extends SubsystemBase {
     return new Rotation2d(getHeading());
   }
   public void setModuleStates(SwerveModuleState[] desiredStates) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.kTeleDriveMaxSpeedMetersPerSecond);
-    frontLeft.setDesiredState(desiredStates[0]);
-    frontRight.setDesiredState(desiredStates[1]);
-    backLeft.setDesiredState(desiredStates[2]);
-    backRight.setDesiredState(desiredStates[3]);
+    //SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.kTeleDriveMaxSpeedMetersPerSecond);
     SmartDashboard.putNumber("Module1ROT", desiredStates[0].angle.getRadians());
     SmartDashboard.putNumber("Module2ROT", desiredStates[1].angle.getRadians());
     SmartDashboard.putNumber("Module3ROT", desiredStates[2].angle.getRadians());
     SmartDashboard.putNumber("Module4ROT", desiredStates[3].angle.getRadians());
-
+    frontLeft.setDesiredState(desiredStates[0]);
+    frontRight.setDesiredState(desiredStates[1]);
+    backLeft.setDesiredState(desiredStates[2]);
+    backRight.setDesiredState(desiredStates[3]);
 }
+
 private void setAllPIDControllers(double p, double i, double d) {
+  System.out.println(p+" "+i+" "+d);
   frontRight.setPidController(p, i, d);
   frontLeft.setPidController(p, i, d);
   backRight.setPidController(p, i, d);

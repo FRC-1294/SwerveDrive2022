@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMax.ControlType;
 
 
 public class SwerveModule {
@@ -47,32 +46,33 @@ public class SwerveModule {
         
         rotMotor = new CANSparkMax(this.m_MotorRotID, MotorType.kBrushless);
         if (isAbsEncoder){
-            universalEncoder = new AnalogInput(this.m_UniversalEncoderID);
+            universalEncoder = new AnalogInput(this.m_UniversalEncoderID); //basically does shit
         }
 
         rotMotor.restoreFactoryDefaults(true);
         transMotor.restoreFactoryDefaults(true);
 
-        transMotor.setInverted(this.m_transInverted);
+        //transMotor.setInverted(this.m_transInverted);
         rotMotor.setInverted(this.m_rotInverted);
 
         transEncoder = transMotor.getEncoder();
         rotEncoder = rotMotor.getEncoder();
+
+        rotEncoder.setPositionConversionFactor(1);
         
-        System.out.println(transEncoder.getPosition());
-        rotEncoder.setPositionConversionFactor(2*Math.PI);
+       //System.out.println(transEncoder.getPosition());
+        
         resetEncoders();
         rotPID = rotMotor.getPIDController();
-        rotationPIDTest = new PIDController(0.05, 0, 0);
-        rotationPIDTest.enableContinuousInput(-Math.PI, Math.PI);
-        
+        rotationPIDTest = new PIDController(0.07, 0, 0);
+        rotationPIDTest.enableContinuousInput(-Math.PI,Math.PI);
         
     }
     public double getTransPosition(){
-        return transEncoder.getPosition();
+        return transEncoder.getPosition(); 
     }
     public double getRotPosition(){
-        return rotEncoder.getPosition();
+        return rotEncoder.getPosition()*rotEncoder.getPositionConversionFactor();
     
     }
     public double getTransVelocity(){
@@ -104,34 +104,45 @@ public class SwerveModule {
         //hello - 8/3/22
     }
     public SwerveModuleState getState(){
-        return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()));
+        return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()*2*Math.PI/18));
     }
     public void setDesiredState(SwerveModuleState desiredState){
+        /**
+        if (Math.abs(desiredState.speedMetersPerSecond) < 0.001) 
+    
+        {
+            stop();
+            return;
+        }
+        **/
+
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
-        SmartDashboard.putNumber("RotationPosition", getRotPosition());
-        SmartDashboard.putNumber("DesiredState", desiredState.angle.getRadians());
-        transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
-        rotMotor.set(rotationPIDTest.calculate(getRotPosition(),desiredState.angle.getRadians()));
-        System.out.println("setPoint is: "+ getRotPosition());
-
-
+        SmartDashboard.putNumber("RotationPosition"+this.m_MotorRotID, getRotPosition());
+        SmartDashboard.putNumber("DesiredState"+this.m_MotorRotID, desiredState.angle.getRadians());
+        if (this.m_transInverted){transMotor.set(-desiredState.speedMetersPerSecond/Constants.maxSpeed);}
+        else{transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);}
+        rotMotor.set(rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, desiredState.angle.getRadians()));
+        //System.out.println("setPoint is: "+ getRotPosition());
     }
-
     public void updatePositions(){
-       rotPID.setReference(Constants.tuningSetpoint,ControlType.kPosition);
+        double sp = rotationPIDTest.calculate(rotEncoder.getPosition(), Constants.tuningSetpoint);
+        System.out.println(sp);
+        rotMotor.set(sp);
     }
+
     public void stop() {
         transMotor.set(0);
         rotMotor.set(0);
+
     }
     public SparkMaxPIDController getPIDController(){
         return this.rotPID;
     }
     public void setPidController(double p, double i, double d){
-        rotPID.setP(p);
-        rotPID.setI(i);
-        rotPID.setD(d);
+        rotationPIDTest.setP(p);
+        rotationPIDTest.setI(i);
+        rotationPIDTest.setD(d);
     }
-    
+
 
 }
