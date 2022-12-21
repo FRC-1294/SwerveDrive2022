@@ -20,9 +20,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.*;
 
-import edu.wpi.first.wpilibj.*;
+
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,9 +30,9 @@ import frc.robot.SwerveModule;
 public class SwerveSubsystem extends SubsystemBase {
   //Bevel Gear must be facing to the left in order to work
   private final SwerveModule frontLeft = new SwerveModule(Constants.frontLeftDrive, Constants.frontLeftSteer, 0,false, true,0,false, false);
-  private final SwerveModule frontRight = new SwerveModule(Constants.frontRightDrive, Constants.frontRightSteer,0,false,true,0,false, false);
+  private final SwerveModule frontRight = new SwerveModule(Constants.frontRightDrive, Constants.frontRightSteer,0,true,true,0,false, false);
   private final SwerveModule backLeft = new SwerveModule(Constants.rearLeftDrive, Constants.rearLeftSteer,0,false,true,0,false, false);
-  private final SwerveModule backRight = new SwerveModule(Constants.rearRightDrive, Constants.rearRightSteer,0,false,true,0,false, false); 
+  private final SwerveModule backRight = new SwerveModule(Constants.rearRightDrive, Constants.rearRightSteer,0,true,true,0,false, false); 
   private final Joystick transJoystick;
   private final Joystick rotJoystick;
 
@@ -41,7 +40,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private SlewRateLimiter yLimiter;
   private SlewRateLimiter turningLimiter;
   private SwerveDriveKinematics m_kinematics;
-
+  private ChassisSpeeds chassisSpeeds1;
   AHRS navx = new AHRS(Port.kMXP);
 
   public SwerveSubsystem() {
@@ -52,9 +51,9 @@ public class SwerveSubsystem extends SubsystemBase {
       new Translation2d(Constants.kWheelBase / 2, Constants.kTrackWidth / 2),
       new Translation2d(-Constants.kWheelBase / 2, -Constants.kTrackWidth / 2),
       new Translation2d(-Constants.kWheelBase / 2, Constants.kTrackWidth / 2));
-    xLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAccelerationUnitsPerSecond);
-    yLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAccelerationUnitsPerSecond);
-    turningLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAngularAccelerationUnitsPerSecond*2);
+    xLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAccelerationUnitsPerSecond*10);
+    yLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAccelerationUnitsPerSecond*10);
+    turningLimiter = new SlewRateLimiter(Constants.kTeleDriveMaxAngularAccelerationUnitsPerSecond*30);
     frontLeft.resetEncoders();
     frontRight.resetEncoders();
     backLeft.resetEncoders();
@@ -62,6 +61,7 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("p", 0);
     SmartDashboard.putNumber("i", 0);
     SmartDashboard.putNumber("d", 0);
+    resetGyro();
   }
   
 
@@ -93,8 +93,8 @@ public class SwerveSubsystem extends SubsystemBase {
     else{
 
       double x= transJoystick.getY();
-      double y = transJoystick.getX();
-      double rot = rotJoystick.getX();
+      double y = -transJoystick.getX();
+      double rot = - rotJoystick.getX();
   
   
       x = Math.abs(x) > 0.15 ? x : 0.0;
@@ -102,11 +102,16 @@ public class SwerveSubsystem extends SubsystemBase {
       rot = Math.abs(rot) > 0.05 ? rot : 0.0;
       
       // 3. Make the driving smoother
-      x = xLimiter.calculate(x) * 5;
-      y = yLimiter.calculate(y) * 5;
+      x = xLimiter.calculate(x) * Constants.kTeleDriveMaxAccelerationUnitsPerSecond;
+      y = yLimiter.calculate(y) * Constants.kTeleDriveMaxAccelerationUnitsPerSecond;
       rot= turningLimiter.calculate(rot)
               * Constants.kTeleDriveMaxAngularSpeedRadiansPerSecond;
-      ChassisSpeeds chassisSpeeds1 = new ChassisSpeeds(x,y, rot);
+      
+      if(transJoystick.getRawButton(3)){resetGyro();}
+      if (Constants.fieldOriented){
+        chassisSpeeds1 = ChassisSpeeds.fromFieldRelativeSpeeds(x, y, rot, getRotation2d());
+      } else {chassisSpeeds1 = new ChassisSpeeds(x,y, rot);}
+ 
       SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(chassisSpeeds1);
       SmartDashboard.putNumber("JOYSTICK Y", y);
       this.setModuleStates(moduleStates);
@@ -118,10 +123,10 @@ public class SwerveSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("ChassisSpeeds POT", chassisSpeeds1.omegaRadiansPerSecond);
       SmartDashboard.putNumber("ChassisSpeed X", chassisSpeeds1.vxMetersPerSecond);
       SmartDashboard.putNumber("ChassisSpeed Y", chassisSpeeds1.vyMetersPerSecond);
+      SmartDashboard.putNumber("Heading", getHeading());
     }
  
   }
-  
   public void resetGyro(){
     navx.reset();
   }
@@ -129,10 +134,10 @@ public class SwerveSubsystem extends SubsystemBase {
     return Math.IEEEremainder(navx.getAngle(), 360);
   }
   public Rotation2d getRotation2d(){
-    return new Rotation2d(getHeading());
+    return Rotation2d.fromDegrees(getHeading());
   }
   public void setModuleStates(SwerveModuleState[] desiredStates) {
-    //SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.kTeleDriveMaxSpeedMetersPerSecond);
+    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.kTeleDriveMaxSpeedMetersPerSecond*10);
     SmartDashboard.putNumber("Module1ROT", desiredStates[0].angle.getRadians());
     SmartDashboard.putNumber("Module2ROT", desiredStates[1].angle.getRadians());
     SmartDashboard.putNumber("Module3ROT", desiredStates[2].angle.getRadians());

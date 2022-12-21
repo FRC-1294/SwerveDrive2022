@@ -49,22 +49,24 @@ public class SwerveModule {
             universalEncoder = new AnalogInput(this.m_UniversalEncoderID); //basically does shit
         }
 
-        rotMotor.restoreFactoryDefaults(true);
-        transMotor.restoreFactoryDefaults(true);
 
-        //transMotor.setInverted(this.m_transInverted);
+        transMotor.setInverted(this.m_transInverted);
         rotMotor.setInverted(this.m_rotInverted);
+
 
         transEncoder = transMotor.getEncoder();
         rotEncoder = rotMotor.getEncoder();
 
+
+        //transEncoder.setInverted(this.m_transInverted);
+        //rotEncoder.setInverted(this.m_rotInverted);
         rotEncoder.setPositionConversionFactor(1);
         
        //System.out.println(transEncoder.getPosition());
         
         resetEncoders();
         rotPID = rotMotor.getPIDController();
-        rotationPIDTest = new PIDController(0.07, 0, 0);
+        rotationPIDTest = new PIDController(0.1, 0, 0);
         rotationPIDTest.enableContinuousInput(-Math.PI,Math.PI);
         
     }
@@ -107,20 +109,18 @@ public class SwerveModule {
         return new SwerveModuleState(getTransVelocity(),new Rotation2d(getRotPosition()*2*Math.PI/18));
     }
     public void setDesiredState(SwerveModuleState desiredState){
-        /**
+        
         if (Math.abs(desiredState.speedMetersPerSecond) < 0.001) 
-    
         {
             stop();
             return;
         }
-        **/
 
         desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
         SmartDashboard.putNumber("RotationPosition"+this.m_MotorRotID, getRotPosition());
         SmartDashboard.putNumber("DesiredState"+this.m_MotorRotID, desiredState.angle.getRadians());
-        if (this.m_transInverted){transMotor.set(-desiredState.speedMetersPerSecond/Constants.maxSpeed);}
-        else{transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);}
+       // if (this.m_transInverted){transMotor.set(-desiredState.speedMetersPerSecond/Constants.maxSpeed);}
+        transMotor.set(desiredState.speedMetersPerSecond/Constants.maxSpeed);
         rotMotor.set(rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, desiredState.angle.getRadians()));
         //System.out.println("setPoint is: "+ getRotPosition());
     }

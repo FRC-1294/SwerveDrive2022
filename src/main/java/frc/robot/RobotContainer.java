@@ -8,11 +8,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.Camera;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.pnumatics;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Button;
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -22,6 +24,8 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  //Joystick rJoystick = new Joystick(Constants.rotJoystickPort);
+  //Joystick tJoystick = new Joystick(Constants.transJoystickPort);
   public final SwerveSubsystem swerve = new SwerveSubsystem();
   //public final pnumatics pnu = new pnumatics();
   //public final Camera cam = new Camera();
