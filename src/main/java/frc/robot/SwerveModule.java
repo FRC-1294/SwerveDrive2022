@@ -57,12 +57,7 @@ public class SwerveModule {
         transEncoder = transMotor.getEncoder();
         rotEncoder = rotMotor.getEncoder();
 
-
-        //transEncoder.setInverted(this.m_transInverted);
-        //rotEncoder.setInverted(this.m_rotInverted);
         rotEncoder.setPositionConversionFactor(1);
-        
-       //System.out.println(transEncoder.getPosition());
         
         resetEncoders();
         rotPID = rotMotor.getPIDController();
@@ -125,8 +120,8 @@ public class SwerveModule {
         //System.out.println("setPoint is: "+ getRotPosition());
     }
     public void updatePositions(){
-        double sp = rotationPIDTest.calculate(rotEncoder.getPosition(), Constants.tuningSetpoint);
-        System.out.println(sp);
+        double sp = rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, Constants.tuningSetpoint);
+        //System.out.println(sp);
         rotMotor.set(sp);
     }
 

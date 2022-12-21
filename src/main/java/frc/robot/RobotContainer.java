@@ -10,11 +10,17 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.command.Scheduler;
+import frc.robot.commands.DefaultDriveCmd;
+import frc.robot.commands.PIDtuning;
 import frc.robot.subsystems.Camera;
+import frc.robot.subsystems.Joysticks;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.pnumatics;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -24,9 +30,10 @@ import edu.wpi.first.wpilibj2.command.button.Button;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  //Joystick rJoystick = new Joystick(Constants.rotJoystickPort);
-  //Joystick tJoystick = new Joystick(Constants.transJoystickPort);
-  public final SwerveSubsystem swerve = new SwerveSubsystem();
+  public final Joysticks joys = new Joysticks();
+  public final SwerveSubsystem swerve = new SwerveSubsystem(joys);
+  public final DefaultDriveCmd npc = new DefaultDriveCmd(joys, swerve);
+  public final PIDtuning pud = new PIDtuning(joys,swerve);
   //public final pnumatics pnu = new pnumatics();
   //public final Camera cam = new Camera();
   /**
@@ -34,6 +41,10 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the button bindings
+    System.out.println("ROBOT CONTAINER ENTERED");
+    if (!Constants.tuningPID){swerve.setDefaultCommand(npc);}
+    else{swerve.setDefaultCommand(pud);}
+
     configureButtonBindings();
   }
 
