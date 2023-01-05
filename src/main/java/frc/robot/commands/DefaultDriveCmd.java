@@ -4,10 +4,15 @@
 
 package frc.robot.commands;
 
+import java.sql.Time;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
+import frc.robot.SwerveModule;
 import frc.robot.subsystems.Joysticks;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -35,7 +40,7 @@ public class DefaultDriveCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    System.out.println("entered execute");
+
     double x= this.joyee.getX();
     double y = this.joyee.getY();
     double rot = this.joyee.getRot();
@@ -55,7 +60,22 @@ public class DefaultDriveCmd extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    swerveee.setMotors(0.0, 0.0, 0.0);
+    //System.out.println("End");
+    //swerveee.goToOrigin();
+    //while (!getClose()){
+      //swerveee.goToOrigin();
+    //}   
+  }
+
+  public boolean getClose(){
+    boolean gf = true;
+    SwerveModule [] rawMods = swerveee.getRawModules();
+    for(SwerveModule mod  : rawMods){
+      if (!mod.getPIDController().atSetpoint()){
+        gf = false;
+      }
+    }
+    return gf;
   }
 
   // Returns true when the command should end.

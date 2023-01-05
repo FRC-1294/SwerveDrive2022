@@ -13,8 +13,10 @@ import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -35,11 +37,13 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveModule backLeft = new SwerveModule(Constants.rearLeftDrive, Constants.rearLeftSteer,0,false,true,0,false, false);
   private final SwerveModule backRight = new SwerveModule(Constants.rearRightDrive, Constants.rearRightSteer,0,true,true,0,false, false); 
 
-  private SwerveDriveKinematics m_kinematics;
+  public SwerveDriveKinematics m_kinematics;
   private ChassisSpeeds chassisSpeeds1;
   private SwerveDriveOdometry m_odometry;
+  private SwerveDrivePoseEstimator m_estimator;
   AHRS navx = new AHRS(Port.kMXP);
   private Joysticks joy;
+  SwerveModule [] rawMods;
 
   public SwerveSubsystem(Joysticks joys) {
     m_kinematics = new SwerveDriveKinematics(
@@ -48,6 +52,7 @@ public class SwerveSubsystem extends SubsystemBase {
       new Translation2d(-Constants.kWheelBase / 2, -Constants.kTrackWidth / 2),
       new Translation2d(-Constants.kWheelBase / 2, Constants.kTrackWidth / 2));
     m_odometry = new SwerveDriveOdometry(m_kinematics, getRotation2d());
+    //m_estimator = new SwerveDrivePoseEstimator(gyroAngle, initialPoseMeters, kinematics, stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs)
     frontLeft.resetEncoders();
     frontRight.resetEncoders();
     backLeft.resetEncoders();
@@ -57,12 +62,15 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("d", 0);
     this.joy = joys;
     resetGyro();
+    resetRobotPose();
+    rawMods = getRawModules();
 
   }
 
   @Override
   public void periodic() {
- 
+    m_odometry.update(getRotation2d(),frontLeft.getState(),frontRight.getState(),backLeft.getState(),backRight.getState());
+    if(joy.resetGyro()){resetGyro();}
   }
   public void resetGyro(){
     navx.reset();
@@ -90,7 +98,6 @@ public class SwerveSubsystem extends SubsystemBase {
     } else {chassisSpeeds1 = new ChassisSpeeds(x,y, rot);}
     SwerveModuleState[] moduleStates = m_kinematics.toSwerveModuleStates(chassisSpeeds1);
     this.setModuleStates(moduleStates);
-    
     SmartDashboard.putNumber("Module1CurrentROT",frontLeft.getRotPosition());
     SmartDashboard.putNumber("Module2CurrentROT", frontRight.getRotPosition());
     SmartDashboard.putNumber("Module3CurrentROT", backLeft.getRotPosition());
@@ -99,6 +106,21 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("ChassisSpeed X", chassisSpeeds1.vxMetersPerSecond);
     SmartDashboard.putNumber("ChassisSpeed Y", chassisSpeeds1.vyMetersPerSecond);
     SmartDashboard.putNumber("Heading", getHeading());
+  }
+
+  public void resetRobotPose(){
+    m_odometry.resetPosition(getRobotPose(),getRotation2d());
+  }
+
+  public Pose2d getRobotPose(){
+    return m_odometry.getPoseMeters();
+  }
+  public void goToOrigin(){
+    System.out.println("executed");
+    frontRight.returnToOrigin();
+    frontLeft.returnToOrigin();
+    backLeft.returnToOrigin();
+    backRight.returnToOrigin();
   }
 
   public void setAllPIDControllers(double p, double i, double d) {

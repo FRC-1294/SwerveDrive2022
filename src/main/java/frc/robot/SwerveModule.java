@@ -124,14 +124,19 @@ public class SwerveModule {
         //System.out.println(sp);
         rotMotor.set(sp);
     }
+    public void returnToOrigin(){
+        System.out.println("In PID loop");
+        rotMotor.set(rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, 0));
+        rotationPIDTest.setTolerance(0);
+    }
 
     public void stop() {
         transMotor.set(0);
         rotMotor.set(0);
 
     }
-    public SparkMaxPIDController getPIDController(){
-        return this.rotPID;
+    public PIDController getPIDController(){
+        return this.rotationPIDTest;
     }
     public void setPidController(double p, double i, double d){
         rotationPIDTest.setP(p);

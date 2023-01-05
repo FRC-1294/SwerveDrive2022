@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import frc.robot.commands.AutonomousDrive;
 import frc.robot.commands.DefaultDriveCmd;
 import frc.robot.commands.PIDtuning;
 import frc.robot.subsystems.Camera;
@@ -41,7 +42,6 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the button bindings
-    System.out.println("ROBOT CONTAINER ENTERED");
     if (!Constants.tuningPID){swerve.setDefaultCommand(npc);}
     else{swerve.setDefaultCommand(pud);}
 
@@ -65,6 +65,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return null;//m_autoCommand;
+    return new AutonomousDrive(swerve);//m_autoCommand;
   }
 }
