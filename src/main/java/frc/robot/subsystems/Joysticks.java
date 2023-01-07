@@ -19,5 +19,6 @@ public class Joysticks {
     public boolean getIncPID(){return tJoystick.getRawButtonPressed(5);}
     public boolean getDecPID(){return tJoystick.getRawButtonPressed(4);}
     public boolean getRobotOriented(){return tJoystick.getTrigger();}
+    public boolean getLimeAlign(){return rJoystick.getTrigger();}
     
 }

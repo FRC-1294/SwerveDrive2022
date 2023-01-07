@@ -38,9 +38,9 @@ public class AutonomousDrive extends CommandBase {
     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
           new Pose2d(0, 0, new Rotation2d(0)),
           List.of(
-                  new Translation2d(1, 15),
-                  new Translation2d(1, -7)),
-          new Pose2d(12, -1, Rotation2d.fromDegrees(90)),
+                  new Translation2d(1, 0),
+                  new Translation2d(1, 1)),
+          new Pose2d(0, 1, Rotation2d.fromDegrees(90)),
           trajectoryConfig);
 
     // 3. Define PID controllers for tracking trajectory
