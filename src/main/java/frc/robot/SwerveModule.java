@@ -5,8 +5,10 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.revrobotics.SparkMaxPIDController;
 
@@ -22,7 +24,7 @@ public class SwerveModule {
     private RelativeEncoder rotEncoder;
     private AnalogInput universalEncoder;
     public SparkMaxPIDController rotPID;
-    public PIDController rotationPIDTest;
+    public ProfiledPIDController rotationPIDTest;
     private Boolean isAbsoluteEncoder;
     private double universalEncoderOffset;
     private Boolean m_transInverted;
@@ -61,7 +63,7 @@ public class SwerveModule {
         
         resetEncoders();
         rotPID = rotMotor.getPIDController();
-        rotationPIDTest = new PIDController(0.1, 0, 0);
+        rotationPIDTest = new ProfiledPIDController(0.45, 0.001, 0,new TrapezoidProfile.Constraints(100, 100));
         rotationPIDTest.enableContinuousInput(-Math.PI,Math.PI);
         
     }
@@ -120,12 +122,15 @@ public class SwerveModule {
         //System.out.println("setPoint is: "+ getRotPosition());
     }
     public void updatePositions(){
+        rotationPIDTest.setPID(Constants.kP, Constants.kI, Constants.kD);
+        rotationPIDTest.disableContinuousInput();
         double sp = rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, Constants.tuningSetpoint);
         //System.out.println(sp);
         rotMotor.set(sp);
     }
     public void returnToOrigin(){
         System.out.println("In PID loop");
+ 
         rotMotor.set(rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, 0));
         rotationPIDTest.setTolerance(0);
     }
@@ -135,7 +140,7 @@ public class SwerveModule {
         rotMotor.set(0);
 
     }
-    public PIDController getPIDController(){
+    public ProfiledPIDController getPIDController(){
         return this.rotationPIDTest;
     }
     public void setPidController(double p, double i, double d){

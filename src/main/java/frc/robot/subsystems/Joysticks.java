@@ -16,8 +16,8 @@ public class Joysticks {
     public double getX(){return tJoystick.getY();}
     public double getY(){return -tJoystick.getX();}
     public double getRot(){return -rJoystick.getX();}
-    public boolean getIncPID(){return tJoystick.getRawButton(5);}
-    public boolean getDecPID(){return rJoystick.getRawButton(4);}
+    public boolean getIncPID(){return tJoystick.getRawButtonPressed(5);}
+    public boolean getDecPID(){return tJoystick.getRawButtonPressed(4);}
     public boolean getRobotOriented(){return tJoystick.getTrigger();}
     
 }

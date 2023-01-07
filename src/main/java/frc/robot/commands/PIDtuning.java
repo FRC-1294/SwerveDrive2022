@@ -15,7 +15,7 @@ public class PIDtuning extends CommandBase {
   /** Creates a new PIDtuning. */
   SwerveSubsystem swerveee;
   Joysticks joyseee;
-  public PIDtuning( Joysticks joys,SwerveSubsystem swerve) {
+  public PIDtuning(Joysticks joys,SwerveSubsystem swerve) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.swerveee = swerve;
     this.joyseee = joys;
@@ -29,15 +29,13 @@ public class PIDtuning extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(Constants.kP != SmartDashboard.getNumber("p", 0) || Constants.kI != SmartDashboard.getNumber("i", 0) ||  Constants.kI != SmartDashboard.getNumber("i", 0)){
-      swerveee.setAllPIDControllers(SmartDashboard.getNumber("p",0), SmartDashboard.getNumber("i", 0), SmartDashboard.getNumber("d", 0));
       Constants.kP = SmartDashboard.getNumber("p", 0);
       Constants.kI = SmartDashboard.getNumber("i", 0);
       Constants.kD = SmartDashboard.getNumber("d", 0);
       if (this.joyseee.getIncPID()){
-        Constants.tuningSetpoint+=0.1;
+        Constants.tuningSetpoint+=Math.PI;
       }else if(this.joyseee.getDecPID()){
-        Constants.tuningSetpoint-=0.1;
+        Constants.tuningSetpoint-=Math.PI;
       }
       SmartDashboard.putNumber("setPointReal", Constants.tuningSetpoint);
       for (SwerveModule mod: swerveee.getRawModules()){
@@ -48,7 +46,7 @@ public class PIDtuning extends CommandBase {
       SmartDashboard.putNumber("Module2CurrentROT", swerveee.getRawModules()[1].getRotPosition());
       SmartDashboard.putNumber("Module3CurrentROT", swerveee.getRawModules()[2].getRotPosition());
       SmartDashboard.putNumber("Module4CurrentROT", swerveee.getRawModules()[3].getRotPosition());
-  }}
+  }
 
   // Called once the command ends or is interrupted.
   @Override
