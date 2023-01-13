@@ -24,7 +24,7 @@ public class SwerveModule {
     private RelativeEncoder rotEncoder;
     private AnalogInput universalEncoder;
     public SparkMaxPIDController rotPID;
-    public ProfiledPIDController rotationPIDTest;
+    public PIDController rotationPIDTest;
     private Boolean isAbsoluteEncoder;
     private double universalEncoderOffset;
     private Boolean m_transInverted;
@@ -63,7 +63,7 @@ public class SwerveModule {
         
         resetEncoders();
         rotPID = rotMotor.getPIDController();
-        rotationPIDTest = new ProfiledPIDController(0.45, 0.001, 0,new TrapezoidProfile.Constraints(100, 100));
+        rotationPIDTest = new PIDController(0.45, 0.001, 0);
         rotationPIDTest.enableContinuousInput(-Math.PI,Math.PI);
         
     }
@@ -121,10 +121,10 @@ public class SwerveModule {
         rotMotor.set(rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, desiredState.angle.getRadians()));
         //System.out.println("setPoint is: "+ getRotPosition());
     }
-    public void updatePositions(){
+    public void updatePositions(Double setPoint){
         rotationPIDTest.setPID(Constants.kP, Constants.kI, Constants.kD);
         rotationPIDTest.disableContinuousInput();
-        double sp = rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, Constants.tuningSetpoint);
+        double sp = rotationPIDTest.calculate(rotEncoder.getPosition()*2*Math.PI/18, setPoint);
         //System.out.println(sp);
         rotMotor.set(sp);
     }
@@ -140,7 +140,8 @@ public class SwerveModule {
         rotMotor.set(0);
 
     }
-    public ProfiledPIDController getPIDController(){
+    
+    public PIDController getPIDController(){
         return this.rotationPIDTest;
     }
     public void setPidController(double p, double i, double d){

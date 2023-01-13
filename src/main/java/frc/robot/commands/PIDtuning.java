@@ -39,7 +39,7 @@ public class PIDtuning extends CommandBase {
       }
       SmartDashboard.putNumber("setPointReal", Constants.tuningSetpoint);
       for (SwerveModule mod: swerveee.getRawModules()){
-        mod.updatePositions();
+        mod.updatePositions(Constants.tuningSetpoint);
       }
       
       SmartDashboard.putNumber("Module1CurrentROT",swerveee.getRawModules()[0].getRotPosition());

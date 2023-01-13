@@ -11,9 +11,13 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.AutonomousDrive;
 import frc.robot.commands.DefaultDriveCmd;
 import frc.robot.commands.PIDtuning;
+import frc.robot.commands.SinglePID;
 import frc.robot.subsystems.Camera;
 import frc.robot.subsystems.Joysticks;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -35,6 +39,12 @@ public class RobotContainer {
   public final SwerveSubsystem swerve = new SwerveSubsystem(joys);
   public final DefaultDriveCmd npc = new DefaultDriveCmd(joys, swerve);
   public final PIDtuning pud = new PIDtuning(joys,swerve);
+
+  public SendableChooser <SwerveModule> moduleSelector = new SendableChooser<>();
+  public SinglePID pod = new SinglePID(moduleSelector.getSelected());
+
+  public SwerveModule [] allModules = swerve.getRawModules(); 
+
   //public final pnumatics pnu = new pnumatics();
   //public final Camera cam = new Camera();
   /**
@@ -42,9 +52,15 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Configure the button bindings
-    if (!Constants.tuningPID){swerve.setDefaultCommand(npc);}
-    else{swerve.setDefaultCommand(pud);}
+    moduleSelector.addOption("Front Left", allModules[0]);
+    moduleSelector.addOption("Front Right", allModules[1]);
+    moduleSelector.addOption("Back Left", allModules[2]);
+    moduleSelector.addOption("Back Right", allModules[3]);
 
+    if (!Constants.tuningPID){swerve.setDefaultCommand(npc);}
+    else{pud.schedule();}
+    
+    SmartDashboard.putData("CHOOOSE", moduleSelector);
     configureButtonBindings();
   }
 

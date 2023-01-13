@@ -50,8 +50,8 @@ public class DefaultDriveCmd extends CommandBase {
     rot = Math.abs(rot) > 0.05 ? rot : 0.0;
       
       // 3. Make the driving smoother
-    x = xLimiter.calculate(x) * Constants.kTeleDriveMaxAccelerationUnitsPerSecond;
-    y = yLimiter.calculate(y) * Constants.kTeleDriveMaxAccelerationUnitsPerSecond;
+    x = xLimiter.calculate(x) * Constants.kTeleDriveMaxAccelerationUnitsPerSecond*1.4;
+    y = yLimiter.calculate(y) * Constants.kTeleDriveMaxAccelerationUnitsPerSecond*1.4;
     rot= turningLimiter.calculate(rot)
           * Constants.kTeleDriveMaxAngularSpeedRadiansPerSecond*3;
     swerveee.setMotors(x, y, rot);

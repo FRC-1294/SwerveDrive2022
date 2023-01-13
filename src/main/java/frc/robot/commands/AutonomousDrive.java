@@ -33,6 +33,7 @@ public class AutonomousDrive extends CommandBase {
     TrajectoryConfig trajectoryConfig = new TrajectoryConfig(
       3,
       1) .setKinematics(this.swerve.m_kinematics);
+  
 
 // 2. Generate trajectory
     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
@@ -40,7 +41,7 @@ public class AutonomousDrive extends CommandBase {
           List.of(
                   new Translation2d(1, 0),
                   new Translation2d(1, 1)),
-          new Pose2d(0, 1, Rotation2d.fromDegrees(90)),
+          new Pose2d(0, 1, Rotation2d.fromDegrees(180)),
           trajectoryConfig);
 
     // 3. Define PID controllers for tracking trajectory
@@ -58,7 +59,7 @@ public class AutonomousDrive extends CommandBase {
       thetaController,
       this.swerve::setModuleStates,
       this.swerve);
-  }
+  }// Programming sucks a lot lol
 
   // Called when the command is initially scheduled.
   @Override
